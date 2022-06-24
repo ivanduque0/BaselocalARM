@@ -1,0 +1,135 @@
+version: '3.3'
+
+services:
+
+   postgres:
+   
+      image: postgres:14-alpine
+      
+      restart: always
+
+      ports:
+         - 44:5432
+         
+      volumes:
+         - ./postgresdata:/var/lib/postgresql/data
+         
+      env_file:
+         - .env.postgres
+   
+   dbmaker:
+   
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+      volumes:
+         - ./dbmaker:/app
+         
+      command: python3 codigo.py
+         
+      env_file: .env.maker
+      
+      environment:
+         - USER=tesis
+   
+      depends_on:
+         - postgres
+         
+   dbmanagerusuarios:
+   
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+      restart: always
+      
+      command: python3 codigo.py
+      
+      volumes:
+         - ./dbmanagerusuarios:/app
+
+      environment:
+         - USER=tesis
+         
+      env_file:
+         - .env.manager
+      
+      depends_on:
+         - postgres
+         
+   dbmanagerhorarios:
+   
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+      restart: always
+      
+      command: python3 codigo.py
+      
+      volumes:
+         - ./dbmanagerhorarios:/app
+
+      environment:
+         - USER=tesis
+         
+      env_file:
+         - .env.manager
+      
+      depends_on:
+         - postgres
+         
+   dbmanagerinteracciones:
+   
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+      restart: always
+      
+      command: python3 codigo.py
+      
+      volumes:
+         - ./dbmanagerinteracciones:/app
+         
+      environment:
+         - USER=tesis
+
+      env_file:
+         - .env.manager
+      
+      depends_on:
+         - postgres
+
+   dbmanagerid:
+   
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+      restart: always
+      
+      command: python3 codigo.py
+      
+      volumes:
+         - ./dbmanagertelegramid:/app
+         
+      environment:
+         - USER=tesis
+
+      env_file:
+         - .env.manager
+      
+      depends_on:
+         - postgres
+         
+   telegrambot:
+   
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+      restart: always
+      
+      command: python3 codigo.py
+      
+      volumes:
+         - ./botelegram:/app
+         
+      environment:
+         - USER=tesis
+
+      env_file:
+         - .env.manager
+      
+      depends_on:
+         - postgres
