@@ -8,8 +8,8 @@ services:
       
       restart: always
 
-      ports:
-         - 44:5432
+      #ports:
+         #- 44:5432
          
       volumes:
          - ./postgresdata:/var/lib/postgresql/data
@@ -27,9 +27,6 @@ services:
       command: python3 codigo.py
          
       env_file: .env.maker
-      
-      environment:
-         - USER=tesis
    
       depends_on:
          - postgres
@@ -44,9 +41,6 @@ services:
       
       volumes:
          - ./dbmanagerusuarios:/app
-
-      environment:
-         - USER=tesis
          
       env_file:
          - .env.manager
@@ -64,9 +58,6 @@ services:
       
       volumes:
          - ./dbmanagerhorarios:/app
-
-      environment:
-         - USER=tesis
          
       env_file:
          - .env.manager
@@ -84,9 +75,6 @@ services:
       
       volumes:
          - ./dbmanagerinteracciones:/app
-         
-      environment:
-         - USER=tesis
 
       env_file:
          - .env.manager
@@ -104,9 +92,6 @@ services:
       
       volumes:
          - ./dbmanagertelegramid:/app
-         
-      environment:
-         - USER=tesis
 
       env_file:
          - .env.manager
@@ -124,9 +109,6 @@ services:
       
       volumes:
          - ./botelegram:/app
-         
-      environment:
-         - USER=tesis
 
       env_file:
          - .env.manager
