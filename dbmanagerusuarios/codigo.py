@@ -74,7 +74,6 @@ while True:
                             listausuariosheroku.index(usuario)
                         except ValueError:
                             cursorlocal.execute('DELETE FROM web_usuarios WHERE cedula=%s', (usuario,))
-                            cursorlocal.execute('DELETE FROM web_fotos WHERE cedula_id=%s', (usuario,))
                             cursorlocal.execute('DELETE FROM web_horariospermitidos WHERE cedula_id=%s', (usuario,))
                             connlocal.commit()
                     listausuariosheroku=[]
