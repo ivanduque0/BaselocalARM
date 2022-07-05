@@ -14,6 +14,8 @@ token=os.environ.get("TOKEN_BOT")
 bot = telebot.TeleBot(token, parse_mode=None)
 total=0
 CONTRATO=os.environ.get("CONTRATO")
+conn = None
+cursor = None
 
 razon1=os.environ.get("RAZON_BOT1")
 razon2=os.environ.get("RAZON_BOT2")
