@@ -135,7 +135,7 @@ def manejador_seleccion(call):
                         horahoy = datetime.strptime(hora, '%H:%M:%S').time()
                         fecha=str(caracas_now)[:10]
                         etapadia=1
-                        aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                        aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                         etapadiaapertura=1
                     elif dia==diahoy and cantidaddias==1:
                         hora=str(caracas_now)[11:19]
@@ -145,7 +145,7 @@ def manejador_seleccion(call):
                         if entrada<salida:
                             if horahoy >= entrada and horahoy <= salida:
                                 #print('entrada concedida')
-                                aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                                 etapadiaapertura=1
                             else:
                                 aperturadenegada(acceso1)
@@ -153,7 +153,7 @@ def manejador_seleccion(call):
                         if entrada>salida:
                             if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                 #print('entrada concedida')
-                                aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                                 etapadiaapertura=1
                             else:
                                 aperturadenegada(acceso1)
@@ -166,7 +166,7 @@ def manejador_seleccion(call):
                         if entrada<salida:
                             if horahoy >= entrada and horahoy <= salida:
                                 #print('entrada concedida')
-                                aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                                 etapadiaapertura=1
                                 contadoraux=0
                             else:
@@ -177,7 +177,7 @@ def manejador_seleccion(call):
                         if entrada>salida:
                             if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                 #print('entrada concedida')
-                                aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                                 etapadiaapertura=1
                                 contadoraux=0
                             else:
@@ -232,7 +232,7 @@ def manejador_seleccion(message):
                             horahoy = datetime.strptime(hora, '%H:%M:%S').time()
                             fecha=str(caracas_now)[:10]
                             etapadia=1
-                            aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                            aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                             etapadiaapertura=1
                         elif dia==diahoy and cantidaddias==1:
                             hora=str(caracas_now)[11:19]
@@ -242,7 +242,7 @@ def manejador_seleccion(message):
                             if entrada<salida:
                                 if horahoy >= entrada and horahoy <= salida:
                                     #print('entrada concedida')
-                                    aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                                     etapadiaapertura=1
                                 else:
                                     aperturadenegada(acceso1)
@@ -250,7 +250,7 @@ def manejador_seleccion(message):
                             if entrada>salida:
                                 if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                     #print('entrada concedida')
-                                    aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                                     etapadiaapertura=1
                                 else:
                                     aperturadenegada(acceso1)
@@ -263,7 +263,7 @@ def manejador_seleccion(message):
                             if entrada<salida:
                                 if horahoy >= entrada and horahoy <= salida:
                                     #print('entrada concedida')
-                                    aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                                     etapadiaapertura=1
                                     contadoraux=0
                                 else:
@@ -274,7 +274,7 @@ def manejador_seleccion(message):
                             if entrada>salida:
                                 if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                     #print('entrada concedida')
-                                    aperturaconcedida(nombre, fecha, horahoy, razon, CONTRATO, cedula, cursor, conn, acceso1)
+                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
                                     etapadiaapertura=1
                                     contadoraux=0
                                 else:
