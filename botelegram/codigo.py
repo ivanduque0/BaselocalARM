@@ -26,6 +26,9 @@ acceso1=os.environ.get('URL_ACCESO1')
 acceso2=os.environ.get('URL_ACCESO2')
 acceso3=os.environ.get('URL_ACCESO3')
 acceso4=os.environ.get('URL_ACCESO4')
+
+accesodict = {'1':acceso1, '2':acceso2, '3':acceso3, '4':acceso4}
+
 # pulseaqui = [
 #     'pulse aqui',
 #     'pulse aqui',
@@ -68,7 +71,8 @@ def aperturaconcedida(nombref, fechaf, horaf, razonf, contratof, cedulaf, cursor
     VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonf, contratof, cedulaf))
     #cursorf.execute('UPDATE led SET onoff=1 WHERE onoff=0;')
     connf.commit()
-    urllib.request.urlopen(f'{acceso}/on')
+    #urllib.request.urlopen(f'{acceso}/on')
+    urllib.request.urlopen(f'{accesodict[acceso]}/on')
 
 
 #def aperturadenegada(cursorf, connf, acceso):
@@ -76,7 +80,8 @@ def aperturaconcedida(nombref, fechaf, horaf, razonf, contratof, cedulaf, cursor
     #connf.commit()
     
 def aperturadenegada(acceso):
-    urllib.request.urlopen(f'{acceso}/off')
+    #urllib.request.urlopen(f'{acceso}/off')
+    urllib.request.urlopen(f'{accesodict[acceso]}/off')
 
 @bot.message_handler(commands=['id'])
 def send_welcome(message):
@@ -135,7 +140,7 @@ def manejador_seleccion(call):
                         horahoy = datetime.strptime(hora, '%H:%M:%S').time()
                         fecha=str(caracas_now)[:10]
                         etapadia=1
-                        aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                        aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                         etapadiaapertura=1
                     elif dia==diahoy and cantidaddias==1:
                         hora=str(caracas_now)[11:19]
@@ -145,18 +150,18 @@ def manejador_seleccion(call):
                         if entrada<salida:
                             if horahoy >= entrada and horahoy <= salida:
                                 #print('entrada concedida')
-                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                                 etapadiaapertura=1
                             else:
-                                aperturadenegada(acceso1)
+                                aperturadenegada('1')
                                 #print('fuera de horario')
                         if entrada>salida:
                             if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                 #print('entrada concedida')
-                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                                 etapadiaapertura=1
                             else:
-                                aperturadenegada(acceso1)
+                                aperturadenegada('1')
                                 #print('fuera de horario')
                     elif dia==diahoy and cantidaddias>1:
                         hora=str(caracas_now)[11:19]
@@ -166,35 +171,35 @@ def manejador_seleccion(call):
                         if entrada<salida:
                             if horahoy >= entrada and horahoy <= salida:
                                 #print('entrada concedida')
-                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                                 etapadiaapertura=1
                                 contadoraux=0
                             else:
                                 contadoraux = contadoraux+1
                                 if contadoraux == cantidaddias:
-                                    aperturadenegada(acceso1)
+                                    aperturadenegada('1')
                                     contadoraux=0
                         if entrada>salida:
                             if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                 #print('entrada concedida')
-                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                                aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                                 etapadiaapertura=1
                                 contadoraux=0
                             else:
                                 contadoraux = contadoraux+1
                                 if contadoraux == cantidaddias:
-                                    aperturadenegada(acceso1)
+                                    aperturadenegada('1')
                                     contadoraux=0
                                 #print('fuera de horario')
                 if etapadia==0 and etapadiaapertura==0:
-                    aperturadenegada(acceso1)
+                    aperturadenegada('1')
                     #print('Dia no permitido')
             if horarios_permitidos == []:
-                aperturadenegada(acceso1) 
+                aperturadenegada('1') 
                 #print('este usuario no tiene horarios establecidos')
             diasusuario=[]
         else:
-            aperturadenegada(acceso1)   
+            aperturadenegada('1')   
 @bot.message_handler(func=lambda message: True)
 def manejador_seleccion(message):
 	
@@ -232,7 +237,7 @@ def manejador_seleccion(message):
                             horahoy = datetime.strptime(hora, '%H:%M:%S').time()
                             fecha=str(caracas_now)[:10]
                             etapadia=1
-                            aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                            aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                             etapadiaapertura=1
                         elif dia==diahoy and cantidaddias==1:
                             hora=str(caracas_now)[11:19]
@@ -242,18 +247,18 @@ def manejador_seleccion(message):
                             if entrada<salida:
                                 if horahoy >= entrada and horahoy <= salida:
                                     #print('entrada concedida')
-                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                                     etapadiaapertura=1
                                 else:
-                                    aperturadenegada(acceso1)
+                                    aperturadenegada('1')
                                     #print('fuera de horario')
                             if entrada>salida:
                                 if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                     #print('entrada concedida')
-                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                                     etapadiaapertura=1
                                 else:
-                                    aperturadenegada(acceso1)
+                                    aperturadenegada('1')
                                     #print('fuera de horario')
                         elif dia==diahoy and cantidaddias>1:
                             hora=str(caracas_now)[11:19]
@@ -263,36 +268,36 @@ def manejador_seleccion(message):
                             if entrada<salida:
                                 if horahoy >= entrada and horahoy <= salida:
                                     #print('entrada concedida')
-                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                                     etapadiaapertura=1
                                     contadoraux=0
                                 else:
                                     contadoraux = contadoraux+1
                                     if contadoraux == cantidaddias:
-                                        aperturadenegada(acceso1)
+                                        aperturadenegada('1')
                                         contadoraux=0
                             if entrada>salida:
                                 if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                     #print('entrada concedida')
-                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, acceso1)
+                                    aperturaconcedida(nombre, fecha, horahoy, razon1, CONTRATO, cedula, cursor, conn, '1')
                                     etapadiaapertura=1
                                     contadoraux=0
                                 else:
                                     contadoraux = contadoraux+1
                                     if contadoraux == cantidaddias:
-                                        aperturadenegada(acceso1)
+                                        aperturadenegada('1')
                                         contadoraux=0
                                     #print('fuera de horario')
                     if etapadia==0 and etapadiaapertura==0:
-                        aperturadenegada(acceso1)
+                        aperturadenegada('1')
                         #print('Dia no permitido')
                 if horarios_permitidos == []:
-                    aperturadenegada(acceso1) 
+                    aperturadenegada('1') 
                     #print('este usuario no tiene horarios establecidos')
                 diasusuario=[]
                
             else:
-                aperturadenegada(acceso1) 
+                aperturadenegada('1') 
     except:
         pass
     finally:
