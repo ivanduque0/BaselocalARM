@@ -55,6 +55,8 @@ services:
    telegrambot:
    
       image: ivanduque0/dbmakermanagerbot:ArmV6l
+
+      container_name: telegrambot
       
       restart: always
       
