@@ -6,10 +6,12 @@ services:
    
       image: postgres:14-alpine
       
+      container_name: postgres
+
       restart: always
 
-      #ports:
-         #- 44:5432
+      ports:
+         - 44:5432
          
       volumes:
          - ./postgresdata:/var/lib/postgresql/data
@@ -30,75 +32,26 @@ services:
    
       depends_on:
          - postgres
-         
-   dbmanagerusuarios:
-   
-      image: ivanduque0/dbmakermanagerbot:ArmV6l
-      
-      restart: always
-      
-      command: python3 codigo.py
-      
-      volumes:
-         - ./dbmanagerusuarios:/app
-         
-      env_file:
-         - .env.manager
-      
-      depends_on:
-         - postgres
-         
-   dbmanagerhorarios:
-   
-      image: ivanduque0/dbmakermanagerbot:ArmV6l
-      
-      restart: always
-      
-      command: python3 codigo.py
-      
-      volumes:
-         - ./dbmanagerhorarios:/app
-         
-      env_file:
-         - .env.manager
-      
-      depends_on:
-         - postgres
-         
-   dbmanagerinteracciones:
-   
-      image: ivanduque0/dbmakermanagerbot:ArmV6l
-      
-      restart: always
-      
-      command: python3 codigo.py
-      
-      volumes:
-         - ./dbmanagerinteracciones:/app
 
+   dbmanagerall:
+   
+      image: ivanduque0/dbmakermanager:V0.3
+
+      container_name: dbmanagerall
+      
+      restart: always
+      
+      command: python3 codigo.py
+      
+      volumes:
+         - ./dbmanagerall:/app
+         
       env_file:
          - .env.manager
       
       depends_on:
          - postgres
 
-   dbmanagerid:
-   
-      image: ivanduque0/dbmakermanagerbot:ArmV6l
-      
-      restart: always
-      
-      command: python3 codigo.py
-      
-      volumes:
-         - ./dbmanagertelegramid:/app
-
-      env_file:
-         - .env.manager
-      
-      depends_on:
-         - postgres
-         
    telegrambot:
    
       image: ivanduque0/dbmakermanagerbot:ArmV6l
@@ -115,3 +68,73 @@ services:
       
       depends_on:
          - postgres
+
+         
+   # dbmanagerusuarios:
+   
+   #    image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+   #    restart: always
+      
+   #    command: python3 codigo.py
+      
+   #    volumes:
+   #       - ./dbmanagerusuarios:/app
+         
+   #    env_file:
+   #       - .env.manager
+      
+   #    depends_on:
+   #       - postgres
+         
+   # dbmanagerhorarios:
+   
+   #    image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+   #    restart: always
+      
+   #    command: python3 codigo.py
+      
+   #    volumes:
+   #       - ./dbmanagerhorarios:/app
+         
+   #    env_file:
+   #       - .env.manager
+      
+   #    depends_on:
+   #       - postgres
+         
+   # dbmanagerinteracciones:
+   
+   #    image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+   #    restart: always
+      
+   #    command: python3 codigo.py
+      
+   #    volumes:
+   #       - ./dbmanagerinteracciones:/app
+
+   #    env_file:
+   #       - .env.manager
+      
+   #    depends_on:
+   #       - postgres
+
+   # dbmanagerid:
+   
+   #    image: ivanduque0/dbmakermanagerbot:ArmV6l
+      
+   #    restart: always
+      
+   #    command: python3 codigo.py
+      
+   #    volumes:
+   #       - ./dbmanagertelegramid:/app
+
+   #    env_file:
+   #       - .env.manager
+      
+   #    depends_on:
+   #       - postgres
+         
