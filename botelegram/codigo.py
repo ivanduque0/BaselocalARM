@@ -72,7 +72,12 @@ def aperturaconcedida(nombref, fechaf, horaf, razonf, contratof, cedulaf, cursor
     #cursorf.execute('UPDATE led SET onoff=1 WHERE onoff=0;')
     connf.commit()
     #urllib.request.urlopen(f'{acceso}/on')
-    urllib.request.urlopen(f'{accesodict[acceso]}/on')
+    try:
+        urllib.request.urlopen(f'{accesodict[acceso]}/on')
+    except:
+        print("fallo en peticion http")
+    finally:
+        pass
 
 
 #def aperturadenegada(cursorf, connf, acceso):
@@ -81,7 +86,12 @@ def aperturaconcedida(nombref, fechaf, horaf, razonf, contratof, cedulaf, cursor
     
 def aperturadenegada(acceso):
     #urllib.request.urlopen(f'{acceso}/off')
-    urllib.request.urlopen(f'{accesodict[acceso]}/off')
+    try:
+        urllib.request.urlopen(f'{accesodict[acceso]}/off')
+    except:
+        print("fallo en peticion http")
+    finally:
+        pass
 
 @bot.message_handler(commands=['id'])
 def send_welcome(message):
