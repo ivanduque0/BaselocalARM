@@ -241,6 +241,44 @@ while True:
                             connlocal.commit()
                     listausuariosheroku=[]
                     listausuarioslocal=[]
+                etapa=4
+            
+            if etapa==4:
+                cursorlocal.execute('SELECT * FROM web_dispositivos')
+                dispositivos_local= cursorlocal.fetchall()
+
+                cursorheroku.execute('SELECT dispositivo, descripcion, estado FROM web_dispositivos where contrato_id=%s', (CONTRATO,))
+                dispositivos_heroku= cursorheroku.fetchall()
+
+                if len(dispositivos_heroku) != len(dispositivos_local):
+                    cursorheroku.execute('''DELETE FROM web_dispositivos * WHERE contrato_id=%s''', (CONTRATO,))
+                    connheroku.commit()
+                    for dispositivolocal in dispositivos_local:
+                        try:
+                            dispositivos_heroku.index(dispositivolocal)
+                        except ValueError:
+                            dispositivo=dispositivolocal[0]
+                            descripcion=dispositivolocal[1]
+                            estado=dispositivolocal[2]
+                            cursorheroku.execute('''INSERT INTO web_dispositivos (dispositivo, descripcion, estado, contrato_id)
+                            VALUES (%s, %s, %s, %s);''', (dispositivo, descripcion, estado, CONTRATO))
+                            connheroku.commit()
+                else:
+                    tz = pytz.timezone('America/Caracas')
+                    caracas_now = datetime.now(tz)
+                    fechaahora=str(caracas_now)[:10]
+                    hora=str(caracas_now)[11:19]
+                    horaahora = datetime.strptime(hora, '%H:%M:%S').time()
+                    for dispositivolocal in dispositivos_local:
+                        try:
+                            dispositivos_heroku.index(dispositivolocal)
+                        except ValueError:
+                            dispositivo=dispositivolocal[0]
+                            descripcion=dispositivolocal[1]
+                            estado=dispositivolocal[2]
+                            cursorheroku.execute('UPDATE web_dispositivos SET estado=%s, fecha=%s, hora=%s WHERE dispositivo=%s AND descripcion=%s AND contrato_id=%s;', 
+                            (estado,fechaahora,horaahora, dispositivo, descripcion, CONTRATO))
+                            connlocal.commit()
                 etapa=0
 
     except (Exception, psycopg2.Error) as error:

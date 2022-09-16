@@ -71,6 +71,25 @@ services:
       depends_on:
          - postgres
 
+   ping:
+   
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+
+      container_name: ping
+      
+      restart: always
+      
+      command: python3 codigo.py
+      
+      volumes:
+         - ./pingdispositivos:/app
+
+      env_file:
+         - .env.manager
+      
+      depends_on:
+         - postgres
+
          
    # dbmanagerusuarios:
    

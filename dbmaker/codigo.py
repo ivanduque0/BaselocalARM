@@ -5,6 +5,33 @@ connlocal = None
 cursorlocal=None
 total=0
 
+SERVIDOR_LOCAL=os.environ.get('URL_SERVIDOR')
+
+######################################
+#############ACCESOS###################
+#######################################
+acceso1=os.environ.get('URL_ACCESO1')
+acceso2=os.environ.get('URL_ACCESO2')
+acceso3=os.environ.get('URL_ACCESO3')
+acceso4=os.environ.get('URL_ACCESO4')
+
+descripcion_acceso1=os.environ.get('RAZON_BOT1')
+descripcion_acceso2=os.environ.get('RAZON_BOT2')
+descripcion_acceso3=os.environ.get('RAZON_BOT3')
+descripcion_acceso4=os.environ.get('RAZON_BOT4')
+
+dispositivos=[acceso1, acceso2, acceso3, acceso4, SERVIDOR_LOCAL      
+      
+             ]
+
+dispositivos_dict ={acceso1:descripcion_acceso1, 
+                    acceso2:descripcion_acceso2, 
+                    acceso3:descripcion_acceso3, 
+                    acceso4:descripcion_acceso4, 
+                    SERVIDOR_LOCAL:'SERVIDOR LOCAL',
+                    
+                    }
+
 while True:
     
     t1=time.perf_counter()
@@ -29,8 +56,20 @@ while True:
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_interacciones (nombre varchar(150), fecha date, hora time without time zone, razon varchar(150), contrato varchar(150), cedula_id varchar(150))')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_horariospermitidos (entrada time without time zone, salida time without time zone, cedula_id varchar(150), dia varchar(180))')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS dias_acumulados (fecha varchar(150))')
+        cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_dispositivos (dispositivo varchar(150), descripcion varchar(150), estado varchar(150))')
         #cursorlocal.execute('CREATE TABLE IF NOT EXISTS led (onoff integer, acceso integer)')
         connlocal.commit()
+
+        cursorlocal.execute('SELECT*FROM web_dispositivos')
+        tabladispositivos= cursorlocal.fetchall()
+
+        if len(tabladispositivos) < 1:
+            for dispositivo in dispositivos:
+                if dispositivo:
+                    descripcion = dispositivos_dict[dispositivo]
+                    estado = '0'
+                    cursorlocal.execute('INSERT INTO web_dispositivos values(%s, %s, %s)',(dispositivo, descripcion, estado))
+                    connlocal.commit()
         # cursorlocal.execute('SELECT*FROM led')
         # tablaled= cursorlocal.fetchall()
         # if len(tablaled) < 1:
