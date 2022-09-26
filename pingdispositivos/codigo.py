@@ -17,9 +17,8 @@ acceso1=os.environ.get('URL_ACCESO1')
 acceso2=os.environ.get('URL_ACCESO2')
 acceso3=os.environ.get('URL_ACCESO3')
 acceso4=os.environ.get('URL_ACCESO4')
-SERVIDOR_LOCAL=os.environ.get('URL_SERVIDOR')
 
-dispositivos=[acceso1, acceso2, acceso3, acceso4,SERVIDOR_LOCAL 
+dispositivos=[acceso1, acceso2, acceso3, acceso4
 
               ]
 
