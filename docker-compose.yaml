@@ -71,6 +71,28 @@ services:
       depends_on:
          - postgres
 
+   wifilocal:
+   
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+
+      container_name: wifilocal
+      
+      restart: always
+      
+      command: python3 codigo.py
+      
+      volumes:
+         - ./servidorlocalwifi:/app
+
+      ports:
+         - 43157:43157
+
+      env_file:
+         - .env.manager
+      
+      depends_on:
+         - postgres
+
    ping:
    
       image: ivanduque0/dbmakermanagerbot:ArmV6l
