@@ -15,10 +15,10 @@ acceso2=os.environ.get('URL_ACCESO2')
 acceso3=os.environ.get('URL_ACCESO3')
 acceso4=os.environ.get('URL_ACCESO4')
 
-descripcion_acceso1=os.environ.get('RAZON_TELEFONO1')
-descripcion_acceso2=os.environ.get('RAZON_TELEFONO2')
-descripcion_acceso3=os.environ.get('RAZON_TELEFONO3')
-descripcion_acceso4=os.environ.get('RAZON_TELEFONO4')
+descripcion_acceso1=os.environ.get('RAZON_ACCESO1')
+descripcion_acceso2=os.environ.get('RAZON_ACCESO2')
+descripcion_acceso3=os.environ.get('RAZON_ACCESO3')
+descripcion_acceso4=os.environ.get('RAZON_ACCESO4')
 
 ######################################
 #############CAPTAHUELLAS#############
@@ -106,7 +106,7 @@ while True:
         cursorlocal = connlocal.cursor()
 
 
-        cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_usuarios (cedula varchar(150), nombre varchar(150), telegram_id varchar(150), contrato_id varchar(150))')
+        cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_usuarios (cedula varchar(150), nombre varchar(150), telegram_id varchar(150))')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_interacciones (nombre varchar(150), fecha date, hora time without time zone, razon varchar(150), contrato varchar(150), cedula_id varchar(150))')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_horariospermitidos (entrada time without time zone, salida time without time zone, cedula_id varchar(150), dia varchar(180))')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS dias_acumulados (fecha varchar(150))')
