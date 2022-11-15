@@ -24,6 +24,8 @@ diasacumulados=[]
 nroCaptahuellasConHuella=0
 nroCaptahuellasSinHuella=0
 captahuella_actual=0
+HuellasPorBorrar=0
+HuellasBorradas=0
 
 captahuella1=os.environ.get('URL_CAPTAHUELLA1')
 captahuella2=os.environ.get('URL_CAPTAHUELLA2')
@@ -117,7 +119,7 @@ while True:
                 cursorlocal.execute('SELECT * FROM web_usuarios')
                 usuarios_local= cursorlocal.fetchall()
 
-                cursorheroku.execute('SELECT cedula, nombre, telegram_id FROM web_usuarios where contrato_id=%s', (CONTRATO,))
+                cursorheroku.execute('SELECT cedula FROM web_usuarios where contrato_id=%s or contrato_id=%s', (CONTRATO,'SEGURICEL'))
                 usuarios_heroku= cursorheroku.fetchall()
 
 
@@ -129,7 +131,7 @@ while True:
                         listausuarioslocal.append(cedula)
                 
                 for usuario in listausuarioslocal:
-                    cursorheroku.execute('SELECT entrada, salida, cedula, dia FROM web_horariospermitidos WHERE cedula=%s and contrato_id=%s',(usuario,CONTRATO))
+                    cursorheroku.execute('SELECT entrada, salida, cedula, dia FROM web_horariospermitidos WHERE cedula=%s and (contrato_id=%s or contrato_id=%s)',(usuario,CONTRATO,'SEGURICEL'))
                     diasheroku= cursorheroku.fetchall()
                     
                     cursorlocal.execute('SELECT * FROM web_horariospermitidos WHERE cedula_id=%s',(usuario,))
@@ -167,10 +169,10 @@ while True:
 
             if etapa==2:
 
-                cursorlocal.execute('SELECT * FROM web_usuarios')
+                cursorlocal.execute('SELECT cedula, telegram_id FROM web_usuarios')
                 usuarios_local= cursorlocal.fetchall()
 
-                cursorheroku.execute('SELECT cedula, nombre, telegram_id FROM web_usuarios where contrato_id=%s', (CONTRATO,))
+                cursorheroku.execute('SELECT cedula, telegram_id FROM web_usuarios where contrato_id=%s or contrato_id=%s', (CONTRATO,'SEGURICEL'))
                 usuarios_heroku= cursorheroku.fetchall()
                 
                 nro_usu_local = len(usuarios_local)
@@ -182,7 +184,7 @@ while True:
                             usuarios_local.index(usuario)
                         except ValueError:
                             cedula=usuario[0]
-                            telegram_id=usuario[2]
+                            telegram_id=usuario[1]
                             cursorlocal.execute("UPDATE web_usuarios SET telegram_id=%s WHERE cedula=%s", (telegram_id,cedula))
                             connlocal.commit()
                 etapa=3
@@ -192,7 +194,7 @@ while True:
                 cursorlocal.execute('SELECT * FROM web_usuarios')
                 usuarios_local= cursorlocal.fetchall()
 
-                cursorheroku.execute('SELECT cedula, nombre, telegram_id FROM web_usuarios where contrato_id=%s', (CONTRATO,))
+                cursorheroku.execute('SELECT cedula FROM web_usuarios where contrato_id=%s or contrato_id=%s', (CONTRATO,'SEGURICEL'))
                 usuarios_heroku= cursorheroku.fetchall()
 
                 nro_usu_local = len(usuarios_local)
@@ -219,9 +221,33 @@ while True:
                         try:
                             listausuariosheroku.index(usuario)
                         except ValueError:
-                            cursorlocal.execute('DELETE FROM web_usuarios WHERE cedula=%s', (usuario,))
-                            cursorlocal.execute('DELETE FROM web_horariospermitidos WHERE cedula_id=%s', (usuario,))
-                            connlocal.commit()
+                            cursorlocal.execute('SELECT id_suprema FROM web_huellas where cedula=%s', (usuario,))
+                            huellas_local= cursorlocal.fetchall()
+                            HuellasPorBorrar=len(huellas_local)
+                            HuellasBorradas=0
+                            nroCaptahuellasSinHuella=0
+                            captahuella_actual=0
+                            for huella_local in huellas_local:
+                                id_suprema = huella_local[0]
+                                id_suprema_hex = (id_suprema).to_bytes(4, byteorder='big').hex()
+                                id_suprema_hex = id_suprema_hex[6:]+id_suprema_hex[4:6]+id_suprema_hex[2:4]+id_suprema_hex[0:2]
+                                for captahuella in captahuellas:
+                                    if captahuella:
+                                        captahuella_actual=captahuella_actual+1
+                                        try:
+                                            peticion = urllib.request.urlopen(url=f'{captahuella}/quitar/{id_suprema_hex}', timeout=3)
+                                            if peticion.getcode() == 200:
+                                                nroCaptahuellasSinHuella=nroCaptahuellasSinHuella+1
+                                        except:
+                                            print(f"fallo al conectar con la esp8266 con la ip:{captahuella}")
+                                if nroCaptahuellasSinHuella == captahuella_actual:
+                                    cursorlocal.execute('DELETE FROM web_huellas WHERE template=%s', (templateEnLista,))
+                                    connlocal.commit()
+                                    HuellasBorradas=HuellasBorradas+1
+                            if HuellasBorradas == HuellasPorBorrar:
+                                cursorlocal.execute('DELETE FROM web_usuarios WHERE cedula=%s', (usuario,))
+                                cursorlocal.execute('DELETE FROM web_horariospermitidos WHERE cedula_id=%s', (usuario,))
+                                connlocal.commit()
                     listausuariosheroku=[]
                     listausuarioslocal=[]
 
@@ -246,7 +272,7 @@ while True:
                         try:
                             listausuarioslocal.index(usuario)
                         except ValueError:
-                            cursorheroku.execute('SELECT cedula, nombre, telegram_id, contrato_id FROM web_usuarios where cedula=%s and contrato_id=%s', (usuario, CONTRATO))
+                            cursorheroku.execute('SELECT cedula, nombre FROM web_usuarios where cedula=%s and (contrato_id=%s or contrato_id=%s)', (usuario, CONTRATO, 'SEGURICEL'))
                             usuario_heroku= cursorheroku.fetchall()
                             cedula=usuario_heroku[0][0]
                             nombre=usuario_heroku[0][1]
@@ -262,7 +288,7 @@ while True:
                 cursorlocal.execute('SELECT * FROM web_usuarios')
                 usuarios_local= cursorlocal.fetchall()
 
-                cursorheroku.execute('SELECT cedula, nombre, telegram_id FROM web_usuarios where contrato_id=%s', (CONTRATO,))
+                cursorheroku.execute('SELECT cedula FROM web_usuarios where contrato_id=%s or contrato_id=%s', (CONTRATO,'SEGURICEL'))
                 usuarios_heroku= cursorheroku.fetchall()
                 
                 for usuario in usuarios_local:
@@ -311,27 +337,25 @@ while True:
                                 try:
                                     listahuellasheroku.index(templateEnLista)
                                 except ValueError:
+                                    nroCaptahuellasSinHuella=0
+                                    captahuella_actual=0
+                                    cursorlocal.execute('SELECT id_suprema FROM web_huellas where template=%s', (templateEnLista,))
+                                    huella_local= cursorlocal.fetchall()
+                                    id_suprema = huella_local[0][0]
+                                    id_suprema_hex = (id_suprema).to_bytes(4, byteorder='big').hex()
+                                    id_suprema_hex = id_suprema_hex[6:]+id_suprema_hex[4:6]+id_suprema_hex[2:4]+id_suprema_hex[0:2]
                                     for captahuella in captahuellas:
                                         if captahuella:
-                                            nroCaptahuellasSinHuella=0
-                                            captahuella_actual=0
-                                            cursorlocal.execute('SELECT id_suprema FROM web_huellas where template=%s', (templateEnLista,))
-                                            huella_local= cursorlocal.fetchall()
-                                            id_suprema = huella_local[0][0]
-                                            id_suprema_hex = (id_suprema).to_bytes(4, byteorder='big').hex()
-                                            id_suprema_hex = id_suprema_hex[6:]+id_suprema_hex[4:6]+id_suprema_hex[2:4]+id_suprema_hex[0:2]
-                                            for captahuella in captahuellas:
-                                                if captahuella:
-                                                    captahuella_actual=captahuella_actual+1
-                                                    try:
-                                                        peticion = urllib.request.urlopen(url=f'{captahuella}/quitar/{id_suprema_hex}', timeout=3)
-                                                        if peticion.getcode() == 200:
-                                                            nroCaptahuellasSinHuella=nroCaptahuellasSinHuella+1
-                                                    except:
-                                                        print(f"fallo al conectar con la esp8266 con la ip:{captahuella}")
-                                            if nroCaptahuellasSinHuella == captahuella_actual:
-                                                cursorlocal.execute('DELETE FROM web_huellas WHERE template=%s', (templateEnLista,))
-                                                connlocal.commit()
+                                            captahuella_actual=captahuella_actual+1
+                                            try:
+                                                peticion = urllib.request.urlopen(url=f'{captahuella}/quitar/{id_suprema_hex}', timeout=3)
+                                                if peticion.getcode() == 200:
+                                                    nroCaptahuellasSinHuella=nroCaptahuellasSinHuella+1
+                                            except:
+                                                print(f"fallo al conectar con la esp8266 con la ip:{captahuella}")
+                                    if nroCaptahuellasSinHuella == captahuella_actual:
+                                        cursorlocal.execute('DELETE FROM web_huellas WHERE template=%s', (templateEnLista,))
+                                        connlocal.commit()
                             listahuellasheroku=[]
                             listahuellaslocal=[]
 
@@ -408,7 +432,7 @@ while True:
                 cursorlocal.execute('SELECT epc, cedula FROM web_tagsrfid')
                 tags_local= cursorlocal.fetchall()
 
-                cursorheroku.execute('SELECT epc, cedula FROM web_tagsrfid where contrato_id=%s', (CONTRATO,))
+                cursorheroku.execute('SELECT epc, cedula FROM web_tagsrfid where contrato_id=%s or contrato_id=%s', (CONTRATO,'SEGURICEL'))
                 tags_heroku= cursorheroku.fetchall()
 
                 nro_tags_local = len(tags_local)
