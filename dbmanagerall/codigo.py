@@ -531,6 +531,19 @@ while True:
                             cursorheroku.execute('UPDATE web_dispositivos SET estado=%s, fecha=%s, hora=%s WHERE dispositivo=%s AND descripcion=%s AND contrato_id=%s;', 
                             (estado,fechaahora,horaahora, dispositivo, descripcion, CONTRATO))
                             connheroku.commit()
+                etapa=7
+            
+            if etapa==7:
+                cursorlocal.execute('SELECT id, estado FROM solicitud_aperturas')
+                aperturas_local= cursorlocal.fetchall()
+                if aperturas_local:
+                    for aperturalocal in aperturas_local:
+                        if aperturalocal[1] == 1:
+                            idapertura=aperturalocal[0]
+                            cursorheroku.execute('DELETE FROM web_apertura WHERE id=%s', (idapertura,))
+                            connheroku.commit()
+                            cursorlocal.execute('DELETE FROM solicitud_aperturas WHERE id=%s', (idapertura,))
+                            connlocal.commit()
                 etapa=0
 
     except (Exception, psycopg2.Error) as error:
