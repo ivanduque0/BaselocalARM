@@ -43,11 +43,23 @@ captahuella7=os.environ.get('URL_CAPTAHUELLA7')
 captahuella8=os.environ.get('URL_CAPTAHUELLA8')
 captahuella9=os.environ.get('URL_CAPTAHUELLA9')
 captahuella10=os.environ.get('URL_CAPTAHUELLA10')
+captahuella10=os.environ.get('URL_CAPTAHUELLA10')
+captahuella11=os.environ.get('URL_CAPTAHUELLA11')
+captahuella12=os.environ.get('URL_CAPTAHUELLA12')
+captahuella13=os.environ.get('URL_CAPTAHUELLA13')
+captahuella14=os.environ.get('URL_CAPTAHUELLA14')
+captahuella15=os.environ.get('URL_CAPTAHUELLA15')
+captahuella16=os.environ.get('URL_CAPTAHUELLA16')
+captahuella17=os.environ.get('URL_CAPTAHUELLA17')
+captahuella18=os.environ.get('URL_CAPTAHUELLA18')
+captahuella19=os.environ.get('URL_CAPTAHUELLA19')
+captahuella20=os.environ.get('URL_CAPTAHUELLA20')
 
 captahuellas=[captahuella1, captahuella2, captahuella3, captahuella4, captahuella5,
               captahuella6, captahuella7, captahuella8, captahuella9, captahuella10,
+              captahuella11, captahuella12, captahuella13, captahuella14, captahuella15,
+              captahuella16, captahuella17, captahuella18, captahuella19, captahuella20, 
               ]
-
 
 
 while True:
