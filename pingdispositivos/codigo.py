@@ -17,7 +17,43 @@ acceso1=os.environ.get('URL_ACCESO1')
 acceso2=os.environ.get('URL_ACCESO2')
 acceso3=os.environ.get('URL_ACCESO3')
 acceso4=os.environ.get('URL_ACCESO4')
+acceso5=os.environ.get('URL_ACCESO5')
+acceso6=os.environ.get('URL_ACCESO6')
+acceso7=os.environ.get('URL_ACCESO7')
+acceso8=os.environ.get('URL_ACCESO8')
+acceso9=os.environ.get('URL_ACCESO9')
+acceso10=os.environ.get('URL_ACCESO10')
+acceso11=os.environ.get('URL_ACCESO11')
+acceso12=os.environ.get('URL_ACCESO12')
+acceso13=os.environ.get('URL_ACCESO13')
+acceso14=os.environ.get('URL_ACCESO14')
+acceso15=os.environ.get('URL_ACCESO15')
+acceso16=os.environ.get('URL_ACCESO16')
+acceso17=os.environ.get('URL_ACCESO17')
+acceso18=os.environ.get('URL_ACCESO18')
+acceso19=os.environ.get('URL_ACCESO19')
+acceso20=os.environ.get('URL_ACCESO20')
 
+descripcion_acceso1=os.environ.get('RAZON_ACCESO1')
+descripcion_acceso2=os.environ.get('RAZON_ACCESO2')
+descripcion_acceso3=os.environ.get('RAZON_ACCESO3')
+descripcion_acceso4=os.environ.get('RAZON_ACCESO4')
+descripcion_acceso5=os.environ.get('RAZON_ACCESO5')
+descripcion_acceso6=os.environ.get('RAZON_ACCESO6')
+descripcion_acceso7=os.environ.get('RAZON_ACCESO7')
+descripcion_acceso8=os.environ.get('RAZON_ACCESO8')
+descripcion_acceso9=os.environ.get('RAZON_ACCESO9')
+descripcion_acceso10=os.environ.get('RAZON_ACCESO10')
+descripcion_acceso11=os.environ.get('RAZON_ACCESO11')
+descripcion_acceso12=os.environ.get('RAZON_ACCESO12')
+descripcion_acceso13=os.environ.get('RAZON_ACCESO13')
+descripcion_acceso14=os.environ.get('RAZON_ACCESO14')
+descripcion_acceso15=os.environ.get('RAZON_ACCESO15')
+descripcion_acceso16=os.environ.get('RAZON_ACCESO16')
+descripcion_acceso17=os.environ.get('RAZON_ACCESO17')
+descripcion_acceso18=os.environ.get('RAZON_ACCESO18')
+descripcion_acceso19=os.environ.get('RAZON_ACCESO19')
+descripcion_acceso20=os.environ.get('RAZON_ACCESO20')
 
 ######################################
 #############CAPTAHUELLAS#############
@@ -27,10 +63,22 @@ captahuella1=os.environ.get('URL_CAPTAHUELLA1')
 captahuella2=os.environ.get('URL_CAPTAHUELLA2')
 captahuella3=os.environ.get('URL_CAPTAHUELLA3')
 captahuella4=os.environ.get('URL_CAPTAHUELLA4')
-# captahuella5=os.environ.get('URL_CAPTAHUELLA5')
-# captahuella6=os.environ.get('URL_CAPTAHUELLA6')
-# captahuella7=os.environ.get('URL_CAPTAHUELLA7')
-# captahuella8=os.environ.get('URL_CAPTAHUELLA8')
+captahuella5=os.environ.get('URL_CAPTAHUELLA5')
+captahuella6=os.environ.get('URL_CAPTAHUELLA6')
+captahuella7=os.environ.get('URL_CAPTAHUELLA7')
+captahuella8=os.environ.get('URL_CAPTAHUELLA8')
+captahuella9=os.environ.get('URL_CAPTAHUELLA9')
+captahuella10=os.environ.get('URL_CAPTAHUELLA10')
+captahuella11=os.environ.get('URL_CAPTAHUELLA11')
+captahuella12=os.environ.get('URL_CAPTAHUELLA12')
+captahuella13=os.environ.get('URL_CAPTAHUELLA13')
+captahuella14=os.environ.get('URL_CAPTAHUELLA14')
+captahuella15=os.environ.get('URL_CAPTAHUELLA15')
+captahuella16=os.environ.get('URL_CAPTAHUELLA16')
+captahuella17=os.environ.get('URL_CAPTAHUELLA17')
+captahuella18=os.environ.get('URL_CAPTAHUELLA18')
+captahuella19=os.environ.get('URL_CAPTAHUELLA19')
+captahuella20=os.environ.get('URL_CAPTAHUELLA20')
 
 ######################################
 ################RFID###################
@@ -40,20 +88,43 @@ rfid1=os.environ.get('URL_RFID1')
 rfid2=os.environ.get('URL_RFID2')
 rfid3=os.environ.get('URL_RFID3')
 rfid4=os.environ.get('URL_RFID4')
-# rfid5=os.environ.get('URL_RFID5')
-# rfid6=os.environ.get('URL_RFID6')
-# rfid7=os.environ.get('URL_RFID7')
-# rfid8=os.environ.get('URL_RFID8')
+rfid5=os.environ.get('URL_RFID5')
+rfid6=os.environ.get('URL_RFID6')
+rfid7=os.environ.get('URL_RFID7')
+rfid8=os.environ.get('URL_RFID8')
+rfid9=os.environ.get('URL_RFID9')
+rfid10=os.environ.get('URL_RFID10')
+rfid11=os.environ.get('URL_RFID11')
+rfid12=os.environ.get('URL_RFID12')
+rfid13=os.environ.get('URL_RFID13')
+rfid14=os.environ.get('URL_RFID14')
+rfid15=os.environ.get('URL_RFID15')
+rfid16=os.environ.get('URL_RFID16')
+rfid17=os.environ.get('URL_RFID17')
+rfid18=os.environ.get('URL_RFID18')
+rfid19=os.environ.get('URL_RFID19')
+rfid20=os.environ.get('URL_RFID20')
 
+dispositivos=[
+            acceso1, acceso2, acceso3, acceso4,
+            acceso5, acceso6, acceso7, acceso8,
+            acceso9, acceso10, acceso11, acceso12,
+            acceso13, acceso14, acceso15, acceso16,
+            acceso17, acceso18, acceso19, acceso20,
+            captahuella1, captahuella2, captahuella3, captahuella4,
+            captahuella5, captahuella6, captahuella7, captahuella8,
+            captahuella9, captahuella10, captahuella11, captahuella12,
+            captahuella13, captahuella14, captahuella15, captahuella16,
+            captahuella17, captahuella18, captahuella19, captahuella20, 
+            rfid1, rfid2, rfid3, rfid4, rfid5,
+            rfid6, rfid7, rfid8, rfid9, rfid10,
+            rfid11, rfid12, rfid13, rfid14, rfid15,
+            rfid16, rfid17, rfid18, rfid19, rfid20,
+            ]
 
-dispositivos=[acceso1, acceso2, acceso3, acceso4,
-              captahuella1, captahuella2, captahuella3, captahuella4,
-              # captahuella5, captahuella6, captahuella7, captahuella8,
-              rfid1, rfid2, rfid3, rfid4,
-              # rfid5, rfid6, rfid7, rfid8
-              ]
-
-intentos=[0,0,0,0,0,0,0,0,0,0,0,0]
+intentos=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 while True:
     total=0
