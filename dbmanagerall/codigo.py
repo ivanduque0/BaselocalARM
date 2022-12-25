@@ -663,19 +663,25 @@ while True:
 
             if etapa==7:
                 try:
-                    cursorlocal.execute('SELECT id, estado FROM solicitud_aperturas')
+                    cursorlocal.execute('SELECT id, estado, peticionInternet, feedback FROM solicitud_aperturas')
                     aperturas_local= cursorlocal.fetchall()
                     if aperturas_local:
                         for aperturalocal in aperturas_local:
                             if aperturalocal[1] == 1:
                                 idapertura=aperturalocal[0]
-                                try:
-                                    request_json = requests.delete(url=f'{URL_API}eliminarsolicitudesaperturaapi/{idapertura}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3)
-                                    if request_json.status_code == 200 or request_json.status_code == 500:
-                                        cursorlocal.execute('DELETE FROM solicitud_aperturas WHERE id=%s', (idapertura,))
-                                        connlocal.commit()
-                                except requests.exceptions.ConnectionError:
-                                    print("fallo consultando api en la etapa 7")
+                                peticionDesdeInternet=aperturalocal[2]
+                                feedbackPeticion=aperturalocal[3]
+                                if peticionDesdeInternet and feedbackPeticion:
+                                    try:
+                                        request_json = requests.delete(url=f'{URL_API}eliminarsolicitudesaperturaapi/{idapertura}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3)
+                                        if request_json.status_code == 200 or request_json.status_code == 500:
+                                            cursorlocal.execute('DELETE FROM solicitud_aperturas WHERE id=%s', (idapertura,))
+                                            connlocal.commit()
+                                    except requests.exceptions.ConnectionError:
+                                        print("fallo consultando api en la etapa 7")
+                                elif not peticionDesdeInternet and feedbackPeticion:
+                                    cursorlocal.execute('DELETE FROM solicitud_aperturas WHERE id=%s', (idapertura,))
+                                    connlocal.commit()
                 except Exception as e:
                     print(f"{e} - fallo total etapa7")
                 etapa=0
