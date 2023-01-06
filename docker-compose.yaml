@@ -52,24 +52,43 @@ services:
       depends_on:
          - postgres
 
-   telegrambot:
+   dispositivos:
    
-      image: ivanduque0/dbmakermanagerbot:ArmV6l
+      image: ivanduque0/dbmakermanager:V0.3
 
-      container_name: telegrambot
+      container_name: dispositivos
       
       restart: always
       
       command: python3 codigo.py
       
       volumes:
-         - ./botelegram:/app
+         - ./dispositivosweb:/app
 
       env_file:
          - .env.manager
       
       depends_on:
          - postgres
+
+   # telegrambot:
+   
+   #    image: ivanduque0/dbmakermanagerbot:ArmV6l
+
+   #    container_name: telegrambot
+      
+   #    restart: always
+      
+   #    command: python3 codigo.py
+      
+   #    volumes:
+   #       - ./botelegram:/app
+
+   #    env_file:
+   #       - .env.manager
+      
+   #    depends_on:
+   #       - postgres
 
    wifilocal:
    
