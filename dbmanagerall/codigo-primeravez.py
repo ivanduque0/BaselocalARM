@@ -91,9 +91,10 @@ try:
                                 contador=contador+1
                                 print(contador)
                                 print(usuario)
-                                try:
-                                    usuariosServidor.index(usuario)
-                                except ValueError:
+                                # try:
+                                #     usuariosServidor.index(usuario)
+                                # except ValueError:
+                                if not usuario in usuariosServidor:
                                     cedula=usuario[0]
                                     cursorlocal.execute('SELECT id_suprema FROM web_huellas where cedula=%s', (cedula,))
                                     huellas_local= cursorlocal.fetchall()
@@ -131,9 +132,10 @@ try:
                                 contador=contador+1
                                 print(contador)
                                 print(usuario)
-                                try:
-                                    usuarios_local.index(usuario)
-                                except ValueError:
+                                # try:
+                                #     usuarios_local.index(usuario)
+                                # except ValueError:
+                                if not usuario in usuarios_local:
                                     cedula=usuario[0]
                                     nombre=usuario[1]
                                     telegram_id=usuario[2]
@@ -147,6 +149,11 @@ try:
                                     connlocal.commit()
                             #listaUsuariosServidor=[]
                             #listaUsuariosLocal=[]
+                        cursorlocal.execute('SELECT cedula, nombre, telegram_id, internet, wifi, captahuella, rfid, facial FROM web_usuarios')
+                        usuarios_local= cursorlocal.fetchall()
+                        nro_usu_local = len(usuarios_local)
+                        if nro_usu_local == nro_usu_servidor:
+                            consultaUsuarios=True
                     else:
                         consultaUsuarios=True
                         print(f'consultaUsuarios: {consultaUsuarios}')
@@ -181,9 +188,10 @@ try:
                         contador=contador+1
                         print(contador)
                         #print(horario)
-                        try:
-                            horariosLocal.index(horario)
-                        except ValueError:
+                        # try:
+                        #     horariosLocal.index(horario)
+                        # except ValueError:
+                        if not horario in horariosLocal:
                             entrada=horario[0]
                             salida=horario[1]
                             cedula=horario[2]
@@ -197,9 +205,10 @@ try:
                         contador=contador+1
                         print(contador)
                         #print(horariosLocaliterar)
-                        try:
-                            horariosServidor.index(horariosLocaliterar)
-                        except ValueError:
+                        # try:
+                        #     horariosServidor.index(horariosLocaliterar)
+                        # except ValueError:
+                        if not horariosLocaliterar in horariosServidor:
                             entrada=horariosLocaliterar[0]
                             salida=horariosLocaliterar[1]
                             cedula=horariosLocaliterar[2]
@@ -222,12 +231,13 @@ try:
         if consultaHorarios and consultarTodo:
             try:
                 try:
-                    
+                    listaempleadosseguricel=[]
                     for empleado_seguricel in empleados_seguricel:
                         cedula=empleado_seguricel[0]
-                        try:
-                            listaempleadosseguricel.index(cedula)
-                        except ValueError:
+                        # try:
+                        #     listaempleadosseguricel.index(cedula)
+                        # except ValueError:
+                        if not cedula in listaempleadosseguricel
                             listaempleadosseguricel.append(cedula)
                     banderaHuellas=True
 
@@ -257,9 +267,10 @@ try:
                             contador=contador+1
                             print(contador)
                             #print(huella)
-                            try:
-                                huellasServidor.index(huella)
-                            except ValueError:
+                            # try:
+                            #     huellasServidor.index(huella)
+                            # except ValueError:
+                            if not huella in huellasServidor:
                                 nroCaptahuellasSinHuella=0
                                 captahuella_actual=0
                                 template=huella[0]
@@ -296,9 +307,10 @@ try:
                                 print(contador)
                                 #print(huella)
                                 idsSupremaOcupados.sort()
-                                try:
-                                    huellas_local.index(huella)
-                                except ValueError:
+                                # try:
+                                #     huellas_local.index(huella)
+                                # except ValueError:
+                                if not huella in huellas_local:
                                     template=huella[0]
                                     id_suprema=huella[1]
                                     cedula=huella[2]
@@ -386,9 +398,10 @@ try:
                         contador=contador+1
                         print(contador)
                         print(tagServidor)
-                        try:
-                            tags_local.index(tagServidor)
-                        except ValueError:
+                        # try:
+                        #     tags_local.index(tagServidor)
+                        # except ValueError:
+                        if not tagServidor in tags_local:
                             epc=tagServidor[0]
                             cedula=tagServidor[1]
                             cursorlocal.execute('''INSERT INTO web_tagsrfid (epc, cedula)
@@ -400,9 +413,10 @@ try:
                         contador=contador+1
                         print(contador)
                         print(taglocaliterar)
-                        try:
-                            tagsServidor.index(taglocaliterar)
-                        except ValueError:
+                        # try:
+                        #     tagsServidor.index(taglocaliterar)
+                        # except ValueError:
+                        if not taglocaliterar in tagsServidor:
                             epc=taglocaliterar[0]
                             cedula=taglocaliterar[1]
                             cursorlocal.execute('DELETE FROM web_tagsrfid WHERE epc=%s AND cedula=%s',(epc, cedula))
@@ -412,7 +426,6 @@ try:
                     tags_local= cursorlocal.fetchall()
                     
                     nro_tags_local = len(tags_local)
-                    nro_tags_servidor = len(tagsServidor)
 
                     if nro_tags_local == nro_tags_servidor:
                         consultaTags=True
