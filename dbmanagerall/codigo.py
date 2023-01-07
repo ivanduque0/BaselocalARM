@@ -178,9 +178,7 @@ while True:
                                 horariosLocal= cursorlocal.fetchall()
 
                                 for horario in horariosServidor:
-                                    try:
-                                        horariosLocal.index(horario)
-                                    except ValueError:
+                                    if not horario in horariosLocal:
                                         entrada=horario[0]
                                         salida=horario[1]
                                         cedula=horario[2]
@@ -190,9 +188,7 @@ while True:
                                         connlocal.commit()
 
                                 for horariosLocaliterar in horariosLocal:
-                                    try:
-                                        horariosServidor.index(horariosLocaliterar)
-                                    except ValueError:
+                                    if not horario in horariosServidor:
                                         entrada=horariosLocaliterar[0]
                                         salida=horariosLocaliterar[1]
                                         cedula=horariosLocaliterar[2]
@@ -208,80 +204,43 @@ while True:
                         try:
                             try:
                                 banderaHuella = True
-                                cursorlocal.execute('SELECT template, id_suprema FROM web_huellas where cedula=%s', (cedulaUsuario,))
+                                cursorlocal.execute('SELECT template, id_suprema, cedula FROM web_huellas where cedula=%s', (cedulaUsuario,))
                                 huellas_local= cursorlocal.fetchall()
 
                                 request_json = requests.get(url=f'{URL_API}obtenerhuellasapi/{cedulaUsuario}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
 
                                 huellasServidor=[]
                                 for consultajson in request_json:
-                                    tuplaHuellaIndividual=(consultajson['template'],consultajson['id_suprema'],)
+                                    tuplaHuellaIndividual=(consultajson['template'], consultajson['id_suprema'], consultajson['cedula'],)
                                     huellasServidor.append(tuplaHuellaIndividual)
 
-                                nro_huellas_local = len(huellas_local)
-                                nro_huellas_servidor = len(huellasServidor)
-
-                                listaHuellasServidor=[]
-                                listahuellaslocal=[]
-                                
-                                #cuando se van a eliminar huellas
-                                for usuario in huellasServidor:
-                                    template=usuario[0]
-                                    try:
-                                        listaHuellasServidor.index(template)
-                                    except ValueError:
-                                        listaHuellasServidor.append(template)
-                                
-                                for usuario in huellas_local:
-                                    template=usuario[0]
-                                    try:
-                                        listahuellaslocal.index(template)
-                                    except ValueError:
-                                        listahuellaslocal.append(template)
-
-                                for templateEnLista in listahuellaslocal:
-                                    try:
-                                        listaHuellasServidor.index(templateEnLista)
-                                    except ValueError:
+                                for huella in huellas_local:
+                                    if not huella in huellasServidor:
                                         nroCaptahuellasSinHuella=0
                                         captahuella_actual=0
-                                        cursorlocal.execute('SELECT id_suprema FROM web_huellas where template=%s', (templateEnLista,))
-                                        huella_local= cursorlocal.fetchall()
-                                        id_suprema = huella_local[0][0]
+                                        template=huella[0]
+                                        id_suprema = huella[1]
                                         id_suprema_hex = (id_suprema).to_bytes(4, byteorder='big').hex()
                                         id_suprema_hex = id_suprema_hex[6:]+id_suprema_hex[4:6]+id_suprema_hex[2:4]+id_suprema_hex[0:2]
                                         for captahuella in captahuellas:
                                             if captahuella:
                                                 captahuella_actual=captahuella_actual+1
                                                 try:
-                                                    peticion = requests.get(url=f'{captahuella}/quitar/{id_suprema_hex}', timeout=3)
+                                                    requests.get(url=f'{captahuella}/quitar/{id_suprema_hex}', timeout=3)
                                                     nroCaptahuellasSinHuella=nroCaptahuellasSinHuella+1
                                                 except:
                                                     print(f"fallo al conectar con la esp8266 con la ip:{captahuella}")  
                                         if nroCaptahuellasSinHuella == captahuella_actual:
-                                            cursorlocal.execute('DELETE FROM web_huellas WHERE template=%s', (templateEnLista,))
+                                            cursorlocal.execute('DELETE FROM web_huellas WHERE template=%s', (template,))
                                             connlocal.commit()
                                         else:
                                             banderaHuella = False  
 
-                                for templateEnLista in listaHuellasServidor:
-                                    try:
-                                        listahuellaslocal.index(templateEnLista)
-                                    except ValueError:
-                                        request_json = requests.get(url=f'{URL_API}obtenerhuellasportemplateapi/{templateEnLista}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
-
-                                        # huellaServidor=[]
-                                        for consultajson in request_json:
-                                            # tuplaHuellaIndividual=(consultajson['id_suprema'],consultajson['cedula'],consultajson['template'],)
-                                            # huellaServidor.append(tuplaHuellaIndividual)
-                                            id_suprema=consultajson['id_suprema']
-                                            cedula=consultajson['cedula']
-                                            template=consultajson['template']
-                                            dedo=consultajson['dedo']
-                                            mano=consultajson['mano']
-                                        # id_suprema=huellaServidor[0][0]
-                                        # cedula=huellaServidor[0][1]
-                                        # template=huellaServidor[0][2]
+                                for huella in huellasServidor:
+                                    if not huella in huellas_local:
+                                        id_suprema=huella[1]
+                                        cedula=huella[2]
+                                        template=huella[0]
                                         nroCaptahuellasConHuella=0
                                         captahuella_actual=0
                                         IdSupremaContador=0 #esto lo uso para ver si hay id de suprema disponibles
@@ -348,9 +307,7 @@ while True:
                                 nro_tags_servidor = len(tagsServidor)
 
                                 for tagServidor in tagsServidor:
-                                    try:
-                                        tags_local.index(tagServidor)
-                                    except ValueError:
+                                    if not tagServidor in tags_local:
                                         epc=tagServidor[0]
                                         cedula=tagServidor[1]
                                         cursorlocal.execute('''INSERT INTO web_tagsrfid (epc, cedula)
@@ -358,9 +315,7 @@ while True:
                                         connlocal.commit()
 
                                 for taglocaliterar in tags_local:
-                                    try:
-                                        tagsServidor.index(taglocaliterar)
-                                    except ValueError:
+                                    if not taglocaliterar in tagsServidor:
                                         epc=taglocaliterar[0]
                                         cedula=taglocaliterar[1]
                                         cursorlocal.execute('DELETE FROM web_tagsrfid WHERE epc=%s AND cedula=%s',(epc, cedula))
