@@ -188,7 +188,7 @@ while True:
                                         connlocal.commit()
 
                                 for horariosLocaliterar in horariosLocal:
-                                    if not horario in horariosServidor:
+                                    if not horariosLocaliterar in horariosServidor:
                                         entrada=horariosLocaliterar[0]
                                         salida=horariosLocaliterar[1]
                                         cedula=horariosLocaliterar[2]
