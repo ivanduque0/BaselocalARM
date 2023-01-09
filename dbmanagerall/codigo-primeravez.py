@@ -237,7 +237,7 @@ try:
                         # try:
                         #     listaempleadosseguricel.index(cedula)
                         # except ValueError:
-                        if not cedula in listaempleadosseguricel
+                        if not cedula in listaempleadosseguricel:
                             listaempleadosseguricel.append(cedula)
                     banderaHuellas=True
 
