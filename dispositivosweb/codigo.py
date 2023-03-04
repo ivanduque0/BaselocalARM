@@ -6,8 +6,11 @@ from datetime import datetime, date, time
 import requests
 
 CONTRATO=os.environ.get("CONTRATO")
+CONTRATO_ID=os.environ.get("CONTRATO_ID")
 URL_API=os.environ.get("URL_API")
 connlocal = None
+connheroku = None
+cursorheroku=None
 cursorlocal=None
 total=0
 
@@ -165,7 +168,7 @@ while True:
                                         "dispositivo": dispositivo,
                                         "descripcion": descripcion,
                                         "estado": estado,
-                                        "contrato": CONTRATO,
+                                        "contrato": CONTRATO_ID,
                                         "acceso": acceso,
                                         "fecha": fecha,
                                         "hora": hora
@@ -185,14 +188,23 @@ while True:
                                 dispositivo=dispositivolocal[0]
                                 descripcion=dispositivolocal[1]
                                 estado=dispositivolocal[2]
-                                requests.put(url=f'{URL_API}actualizardispositivosapi/{CONTRATO}/{dispositivo[7:]}/{estado}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3)
+                                jsonActualizarDispositivo= {
+                                    "contrato": CONTRATO_ID,
+                                    "dispositivo": dispositivo,
+                                    "descripcion": descripcion,
+                                    "estado": estado,
+                                    "fecha": fecha,
+                                    "hora": hora
+                                }
+                                requests.put(url=f'{URL_API}actualizardispositivosapi/{CONTRATO}/{dispositivo[7:]}/{estado}/',
+                                json=jsonActualizarDispositivo, auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3)
                 except requests.exceptions.ConnectionError:
                     print("fallo consultando api de dispositivos")   
             except Exception as e:
                 print(f"{e} - fallo total en los dispositivos")  
     
     except (Exception, psycopg2.Error) as error:
-        print(f"{error} - fallo en hacer las consultas en dispositivos")
+        print(f"{error} - fallo en hacer las consultas de base de datos de dispositivos")
         if connlocal:
             cursorlocal.close()
             connlocal.close()

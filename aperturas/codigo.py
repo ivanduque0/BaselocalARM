@@ -67,18 +67,39 @@ razondict = {'1':razon1, '2':razon2, '3':razon3, '4':razon4, '5':razon5,
             '11':razon11, '12':razon12, '13':razon13, '14':razon14, '15':razon15,
             '16':razon16, '17':razon17, '18':razon18, '19':razon19, '20':razon20}
 
-def aperturaConcedidaInternet(nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, id_solicitud):
+def controlhorariovisitante(cursorf, connf, horario_id, razon):
+    abrir=False
+    cantidad_aperturas=0
+    cursorf.execute('SELECT aperturas_hechas FROM control_horarios_visitantes WHERE horario_id=%s',(horario_id,))
+    control_visitante= cursorf.fetchall()
+    if not control_visitante:
+        if razon=='entrada':
+            cursorf.execute('''INSERT INTO control_horarios_visitantes (horario_id, aperturas_hechas) 
+            VALUES (%s, %s)''', (horario_id, 0))
+            conn.commit()
+            abrir=True
+    elif control_visitante[0][0]<2:
+        if razon=='salida':
+            cantidad_aperturas=control_visitante[0][0]
+            abrir=True
+
+    return abrir, cantidad_aperturas
+
+def aperturaConcedidaInternet(nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, id_solicitud, razon):
     
     try:
         if accesodict[acceso]:
-            requests.get(f'{accesodict[acceso]}/on', timeout=1)
+            razonRegistrar=f"{razondict[acceso]}(Internet)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(Internet)-{razon}"
+            requests.get(f'{accesodict[acceso]}/on', timeout=2)
             cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
-            VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f"{razondict[acceso]}-Internet", contratof, cedulaf))
+            VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             # connf.commit()
             cursorf.execute('UPDATE solicitud_aperturas SET estado=%s WHERE id=%s;', (1, id_solicitud))
+            cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado) 
+            VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
             connf.commit()
-            requests.put(url=f'{URL_API}aperturasusuarioapi/{id_solicitud}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'))
+            requests.put(url=f'{URL_API}aperturasusuarioapi/{id_solicitud}/{contratof}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'))
     except Exception as e:
         print(f"{e} - fallo intentando aperturar desde internet en la peticion con id {id_solicitud}")
         # cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
@@ -88,16 +109,44 @@ def aperturaConcedidaInternet(nombref, fechaf, horaf, contratof, cedulaf, cursor
     # finally:
     #     pass
 
-def aperturaConcedidaWifi(nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, id_solicitud):
+def aperturaConcedidaInternetVisitante(nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, id_solicitud, razon, horario_id, aperturasRealizadas):
     
     try:
         if accesodict[acceso]:
-            requests.get(f'{accesodict[acceso]}/on', timeout=1)
+            razonRegistrar=f"{razondict[acceso]}(Internet)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(Internet)-{razon}"
+            requests.get(f'{accesodict[acceso]}/on', timeout=2)
+            cursor.execute('UPDATE control_horarios_visitantes SET aperturas_hechas=%s WHERE horario_id=%s', (aperturasRealizadas+1,horario_id))
             cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
-            VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f"{razondict[acceso]}-Wifi", contratof, cedulaf))
+            VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf))
+            #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
+            # connf.commit()
+            cursorf.execute('UPDATE solicitud_aperturas SET estado=%s WHERE id=%s;', (1, id_solicitud))
+            cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado) 
+            VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
+            connf.commit()
+            requests.put(url=f'{URL_API}aperturasusuarioapi/{id_solicitud}/{contratof}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'))
+    except Exception as e:
+        print(f"{e} - fallo intentando aperturar desde internet en la peticion con id {id_solicitud}")
+        # cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+        # VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f'fallo_{razondict[acceso]}-Internet', contratof, cedulaf))
+        # #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
+        # connf.commit()
+    # finally:
+    #     pass
+
+def aperturaConcedidaWifi(nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, id_solicitud, razon):
+    
+    try:
+        if accesodict[acceso]:
+            razonRegistrar=f"{razondict[acceso]}(Wifi)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(Wifi)-{razon}"
+            requests.get(f'{accesodict[acceso]}/on', timeout=2)
+            cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+            VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             connf.commit()
             cursorf.execute('UPDATE solicitud_aperturas SET estado=%s WHERE id=%s;', (1, id_solicitud))
+            cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado) 
+            VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
             connf.commit()
     except Exception as e:
         print(f"{e} - fallo intentando aperturar desde wifi en la peticion con id {id_solicitud}")
@@ -124,14 +173,31 @@ def aperturaConcedidaWifi(nombref, fechaf, horaf, contratof, cedulaf, cursorf, c
     #     acceso = jsonget['acceso']
     # dataa = {'contrato': 'no', 'acceso': 'no'}
     # requests.post(url, data=dataa)
-		     
+
+def aperturaConcedidaWifiVisitante(nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, id_solicitud, razon, horario_id, aperturasRealizadas):
+    
+    try:
+        if accesodict[acceso]:
+            razonRegistrar=f"{razondict[acceso]}(Wifi)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(Wifi)-{razon}"
+            requests.get(f'{accesodict[acceso]}/on', timeout=2)
+            cursor.execute('UPDATE control_horarios_visitantes SET aperturas_hechas=%s WHERE horario_id=%s', (aperturasRealizadas+1,horario_id))
+            cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+            VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf))
+            #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
+            connf.commit()
+            cursorf.execute('UPDATE solicitud_aperturas SET estado=%s WHERE id=%s;', (1, id_solicitud))
+            cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado) 
+            VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
+            connf.commit()
+    except Exception as e:
+        print(f"{e} - fallo intentando aperturar desde wifi en la peticion con id {id_solicitud}")  
 
 def aperturadenegada(cursorf, connf, acceso, id_solicitud):
     # cursorf.execute('''UPDATE led SET onoff=2 WHERE onoff=0;''')
     # connf.commit()
     try:
-        requests.get(f'{accesodict[acceso]}/off')
-        cursorf.execute('UPDATE solicitud_aperturas SET estado=%s WHERE id=%s;', (1, id_solicitud))
+        requests.get(f'{accesodict[acceso]}/off', timeout=2)
+        cursorf.execute('UPDATE solicitud_aperturas SET estado=%s, feedback=%s WHERE id=%s;', (1,'t', id_solicitud))
         connf.commit()
     except Exception as e:
         print(f"{e} - fallo en peticion para denegar apertura")
@@ -158,44 +224,45 @@ while True:
         cursor = conn.cursor()
 
         while True:
-
-            aperturas_solicitadas = requests.get(url=f'{URL_API}aperturascontratoapi/{CONTRATO}/', auth=('BaseLocal_access', 'S3gur1c3l_local@')).json()
-            if len(aperturas_solicitadas):
-                tz = pytz.timezone('America/Caracas')
-                caracas_now = datetime.now(tz)
-                hora=str(caracas_now)[11:19]
-                hora_hora=int(hora[:2])
-                hora_minuto=int(hora[3:5])
-                fecha=str(caracas_now)[:10]
-                for apertura in aperturas_solicitadas:
-                    #print(dt['contrato'])
-                    solicitud_hora_completa = apertura['hora']
-                    solicitud_hora=int(solicitud_hora_completa[:2])
-                    solicitud_minuto=int(solicitud_hora_completa[3:5])
-                    diferencia_horas=hora_hora-solicitud_hora
-                    diferencia_minutos=hora_minuto-solicitud_minuto
-                    solicitud_id=apertura['id']
-                    id_usuario = apertura['id_usuario']
-                    solicitud_acceso=apertura['acceso']
-                    feedbackPeticion=apertura['feedback']
-                    cursor.execute('SELECT * FROM solicitud_aperturas WHERE id=%s',(solicitud_id,))
-                    aperturas_local_existente= cursor.fetchall()
-                    if not aperturas_local_existente:
-                        if apertura['fecha'] == fecha and diferencia_horas==0 and (diferencia_minutos >= -1 or diferencia_minutos <= 2):
-                                cursor.execute('''INSERT INTO solicitud_aperturas (id, id_usuario, acceso, estado, peticionInternet, feedback)
-                                    VALUES (%s, %s, %s, %s, %s, %s)''', (solicitud_id, id_usuario, solicitud_acceso, 0, 't', 'f'))
+            try:
+                aperturas_solicitadas = requests.get(url=f'{URL_API}aperturascontratoapi/{CONTRATO}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
+                if len(aperturas_solicitadas):
+                    tz = pytz.timezone('America/Caracas')
+                    caracas_now = datetime.now(tz)
+                    hora=str(caracas_now)[11:19]
+                    hora_hora=int(hora[:2])
+                    hora_minuto=int(hora[3:5])
+                    fecha=str(caracas_now)[:10]
+                    for apertura in aperturas_solicitadas:
+                        #print(dt['contrato'])
+                        solicitud_hora_completa = apertura['hora']
+                        solicitud_hora=int(solicitud_hora_completa[:2])
+                        solicitud_minuto=int(solicitud_hora_completa[3:5])
+                        diferencia_horas=hora_hora-solicitud_hora
+                        diferencia_minutos=hora_minuto-solicitud_minuto
+                        solicitud_id=apertura['id']
+                        id_usuario = apertura['codigo_usuario']
+                        solicitud_acceso=apertura['acceso']
+                        razon=apertura['razon']
+                        feedbackPeticion=apertura['feedback']
+                        cursor.execute('SELECT * FROM solicitud_aperturas WHERE id=%s',(solicitud_id,))
+                        aperturas_local_existente= cursor.fetchall()
+                        if not aperturas_local_existente:
+                            if apertura['fecha'] == fecha and diferencia_horas==0 and (diferencia_minutos >= -1 or diferencia_minutos <= 2):
+                                    cursor.execute('''INSERT INTO solicitud_aperturas (id, id_usuario, acceso, razon,  estado, peticionInternet, feedback)
+                                        VALUES (%s, %s, %s, %s, %s, %s, %s)''', (solicitud_id, id_usuario, solicitud_acceso, razon, 0, 't', 'f'))
+                                    conn.commit()
+                            else:   
+                                cursor.execute('''INSERT INTO solicitud_aperturas (id, id_usuario, acceso, razon, estado, peticionInternet, feedback)
+                                    VALUES (%s, %s, %s, %s, %s, %s, %s)''', (solicitud_id, id_usuario, solicitud_acceso, razon, 1, 't', 't'))
                                 conn.commit()
-                        else:   
-                            cursor.execute('''INSERT INTO solicitud_aperturas (id, id_usuario, acceso, estado, peticionInternet, feedback)
-                                VALUES (%s, %s, %s, %s, %s, %s)''', (solicitud_id, id_usuario, solicitud_acceso, 1, 't', 't'))
+                        elif aperturas_local_existente and feedbackPeticion:
+                            cursor.execute('UPDATE solicitud_aperturas SET feedback=%s WHERE id=%s', ('t',solicitud_id))
                             conn.commit()
-                    elif aperturas_local_existente and feedbackPeticion:
-                        cursor.execute('UPDATE solicitud_aperturas SET feedback=%s WHERE id=%s', ('t',solicitud_id))
-                        conn.commit()
+            except Exception as error:
+                print(f"{error} - fallo en api solicitud de aperturas")
 
-
-
-            cursor.execute('SELECT id, id_usuario, acceso, estado, peticionInternet FROM solicitud_aperturas')
+            cursor.execute('SELECT id, id_usuario, acceso, estado, peticionInternet, razon FROM solicitud_aperturas')
             aperturas_local= cursor.fetchall()
 
             if len(aperturas_local):
@@ -209,11 +276,12 @@ while True:
                         etapadiaapertura=0
                         cantidaddias = 0
                         contadoraux = 0
-                        id_usuario = aperturalocal[1]
+                        codigo_usuario = aperturalocal[1]
                         acceso_solicitud=aperturalocal[2]
                         id_solicitud=aperturalocal[0]
                         peticion_internet=aperturalocal[4]
-                        cursor.execute("SELECT cedula, nombre, internet, wifi FROM web_usuarios where telegram_id=%s", (id_usuario,))
+                        razonApertura=aperturalocal[5]
+                        cursor.execute("SELECT cedula, nombre, internet, wifi, rol, id FROM web_usuarios where telegram_id=%s", (codigo_usuario,))
                         datosUsuario = cursor.fetchall()
                         #print(datosUsuario)
                         if len(datosUsuario)!=0:
@@ -221,23 +289,25 @@ while True:
                             nombre=datosUsuario[0][1]
                             permisoAperturaInternet = datosUsuario[0][2]
                             permisoAperturaWifi = datosUsuario[0][3]
-                            cursor.execute('SELECT * FROM web_horariospermitidos where cedula_id=%s', (cedula,))
+                            rol=datosUsuario[0][4]
+                            usuario_id=datosUsuario[0][5]
+                            cursor.execute('SELECT id, fecha_entrada, fecha_salida, entrada, salida, dia FROM web_horariospermitidos where usuario=%s', (usuario_id,))
                             horarios_permitidos = cursor.fetchall()
-                            if horarios_permitidos != [] and permisoAperturaInternet == True and peticion_internet==True:
+                            if horarios_permitidos != [] and permisoAperturaInternet == True and peticion_internet==True and rol=='Secundario':
                                 tz = pytz.timezone('America/Caracas')
                                 caracas_now = datetime.now(tz)
                                 dia = caracas_now.weekday()
                                 diahoy = dias_semana[dia]
-                                for entrada, salida, _, dia in horarios_permitidos:
+                                for _, _, _, entrada, salida, dia in horarios_permitidos:
                                     diasusuario.append(dia)
                                 cantidaddias = diasusuario.count(dia)
-                                for entrada, salida, _, dia in horarios_permitidos:
+                                for _, _, _, entrada, salida, dia in horarios_permitidos:
                                     if 'Siempre' in diasusuario:
                                         hora=str(caracas_now)[11:19]
                                         horahoy = datetime.strptime(hora, '%H:%M:%S').time()
                                         fecha=str(caracas_now)[:10]
                                         etapadia=1
-                                        aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud)   
+                                        aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)   
                                         etapadiaapertura=1
                                     elif dia==diahoy and cantidaddias==1:
                                         hora=str(caracas_now)[11:19]
@@ -247,7 +317,7 @@ while True:
                                         if entrada<salida:
                                             if horahoy >= entrada and horahoy <= salida:
                                                 #print('entrada concedida')
-                                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud)  
+                                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)  
                                                 etapadiaapertura=1
                                             else:
                                                 aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud)
@@ -255,7 +325,7 @@ while True:
                                         if entrada>salida:
                                             if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                                 #print('entrada concedida')
-                                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud)   
+                                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)   
                                                 etapadiaapertura=1
                                             else:
                                                 aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud)
@@ -268,7 +338,7 @@ while True:
                                         if entrada<salida:
                                             if horahoy >= entrada and horahoy <= salida:
                                                 #print('entrada concedida')
-                                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud) 
+                                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura) 
                                                 etapadiaapertura=1
                                                 contadoraux=0
                                             else:
@@ -279,7 +349,7 @@ while True:
                                         if entrada>salida:
                                             if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                                 #print('entrada concedida')
-                                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud) 
+                                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura) 
                                                 etapadiaapertura=1
                                                 contadoraux=0
                                             else:
@@ -291,21 +361,44 @@ while True:
                                 if etapadia==0 and etapadiaapertura==0:
                                     aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud)
                                     #print('Dia no permitido')
-                            elif horarios_permitidos != [] and permisoAperturaWifi == True and peticion_internet == False:
+                            elif rol=='Propietario' and permisoAperturaInternet == True and peticion_internet==True:
+                                tz = pytz.timezone('America/Caracas')
+                                caracas_now = datetime.now(tz)
+                                hora=str(caracas_now)[11:19]
+                                horahoy = datetime.strptime(hora, '%H:%M:%S').time()
+                                fecha=str(caracas_now)[:10]
+                                etapadia=1
+                                aperturaConcedidaInternet(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)   
+                            elif horarios_permitidos != [] and permisoAperturaInternet == True and peticion_internet==True and rol=='Visitante':
+                                tz = pytz.timezone('America/Caracas')
+                                caracas_now = datetime.now(tz)
+                                horahoy = caracas_now.time()
+                                fechahoy = caracas_now.date()
+                                for horario_id, fecha_entrada, fecha_salida, entrada, salida, _ in horarios_permitidos:
+                                    if (fechahoy==fecha_entrada and horahoy>=entrada) or (fechahoy > fecha_entrada and fechahoy<fecha_salida) or (fechahoy==fecha_salida and horahoy<=salida):
+                                        permitir, aperturasRealizadas = controlhorariovisitante(cursor, conn, horario_id, razonApertura)
+                                        if permitir:
+                                            fecha=str(caracas_now)[:10]
+                                            aperturaConcedidaInternetVisitante(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura, horario_id, aperturasRealizadas)
+                                        else:
+                                            aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud) 
+                                    else:
+                                        aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud)
+                            elif horarios_permitidos != [] and permisoAperturaWifi == True and peticion_internet == False and rol=='Secundario':
                                 tz = pytz.timezone('America/Caracas')
                                 caracas_now = datetime.now(tz)
                                 dia = caracas_now.weekday()
                                 diahoy = dias_semana[dia]
-                                for entrada, salida, _, dia in horarios_permitidos:
+                                for _, _, _, entrada, salida, dia in horarios_permitidos:
                                     diasusuario.append(dia)
                                 cantidaddias = diasusuario.count(dia)
-                                for entrada, salida, _, dia in horarios_permitidos:
-                                    if 'Siempre' in diasusuario:
+                                for _, _, _, entrada, salida, dia in horarios_permitidos:
+                                    if 'Siempre' in diasusuario or rol=='Propietario':
                                         hora=str(caracas_now)[11:19]
                                         horahoy = datetime.strptime(hora, '%H:%M:%S').time()
                                         fecha=str(caracas_now)[:10]
                                         etapadia=1
-                                        aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud)
+                                        aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)
                                         etapadiaapertura=1
                                     elif dia==diahoy and cantidaddias==1:
                                         hora=str(caracas_now)[11:19]
@@ -315,7 +408,7 @@ while True:
                                         if entrada<salida:
                                             if horahoy >= entrada and horahoy <= salida:
                                                 #print('entrada concedida')
-                                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud)
+                                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)
                                                 etapadiaapertura=1
                                             else:
                                                 aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud)
@@ -323,7 +416,7 @@ while True:
                                         if entrada>salida:
                                             if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                                 #print('entrada concedida')
-                                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud)
+                                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)
                                                 etapadiaapertura=1
                                             else:
                                                 aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud)
@@ -336,7 +429,7 @@ while True:
                                         if entrada<salida:
                                             if horahoy >= entrada and horahoy <= salida:
                                                 #print('entrada concedida')
-                                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud)
+                                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)
                                                 etapadiaapertura=1
                                                 contadoraux=0
                                             else:
@@ -347,7 +440,7 @@ while True:
                                         if entrada>salida:
                                             if (horahoy>=entrada and horahoy <=ultimahora) or (horahoy>=primerahora and horahoy <= salida):
                                                 #print('entrada concedida')
-                                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud)
+                                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)
                                                 etapadiaapertura=1
                                                 contadoraux=0
                                             else:
@@ -359,6 +452,29 @@ while True:
                                 if etapadia==0 and etapadiaapertura==0:
                                     aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud)
                                     #print('Dia no permitido')
+                            elif rol=='Propietario' and permisoAperturaWifi == True and peticion_internet == False:
+                                tz = pytz.timezone('America/Caracas')
+                                caracas_now = datetime.now(tz)
+                                hora=str(caracas_now)[11:19]
+                                horahoy = datetime.strptime(hora, '%H:%M:%S').time()
+                                fecha=str(caracas_now)[:10]
+                                etapadia=1
+                                aperturaConcedidaWifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura)
+                            elif horarios_permitidos != [] and permisoAperturaWifi == True and peticion_internet == False and rol=='Visitante':
+                                tz = pytz.timezone('America/Caracas')
+                                caracas_now = datetime.now(tz)
+                                horahoy = caracas_now.time()
+                                fechahoy = caracas_now.date()
+                                for horario_id, fecha_entrada, fecha_salida, entrada, salida, _ in horarios_permitidos:
+                                    if (fechahoy==fecha_entrada and horahoy>=entrada) or (fechahoy > fecha_entrada and fechahoy<fecha_salida) or (fechahoy==fecha_salida and horahoy<=salida):
+                                        permitir, aperturasRealizadas = controlhorariovisitante(cursor, conn, horario_id, razonApertura)
+                                        if permitir:
+                                            fecha=str(caracas_now)[:10]
+                                            aperturaConcedidaWifiVisitante(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, id_solicitud, razonApertura, horario_id, aperturasRealizadas)
+                                        else:
+                                            aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud) 
+                                    else:
+                                        aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud)
                             else:
                                 aperturadenegada(cursor, conn, acceso_solicitud, id_solicitud) 
                                 #print('este usuario no tiene horarios establecidos')
@@ -368,7 +484,6 @@ while True:
     except (Exception, psycopg2.Error) as error:
         print(f"{error} - fallo en hacer las consultas en base de datos de aperturas")
         total=0
-
     finally:
         print("se ha cerrado la conexion a la base de datos")
         if conn:
