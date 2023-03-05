@@ -104,14 +104,14 @@ while True:
                                 try:
                                     banderaUsuario=True
                                     if not idUsuario:
-                                        cursorlocal.execute('SELECT id, telegram_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial FROM web_usuarios')
+                                        cursorlocal.execute('SELECT id, rol, cedula, nombre, telegram_id, numero_telefonico, cedula_propietario, unidad_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial FROM web_usuarios')
                                         usuarios_local= cursorlocal.fetchall()
                                         
                                         request_json_usuario = requests.get(url=f'{URL_API}obtenerusuariosapi/{CONTRATO}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
 
                                         usuariosServidor=[]
                                         for consultajson in request_json_usuario:
-                                            tuplaUsuarioIndividual=(consultajson['id'],consultajson['telegram_id'], consultajson['entrada_beacon_uuid'], consultajson['salida_beacon_uuid'], consultajson['telefonoInternet'], consultajson['telefonoWifi'], consultajson['telefonoBluetooth'], consultajson['captahuella'], consultajson['rfid'], consultajson['reconocimientoFacial'],)
+                                            tuplaUsuarioIndividual=(consultajson['id'],consultajson['rol'],consultajson['cedula'],consultajson['nombre'],consultajson['telegram_id'], consultajson['numero_telefonico'], consultajson['cedula_propietario'], consultajson['unidad'],consultajson['entrada_beacon_uuid'], consultajson['salida_beacon_uuid'], consultajson['telefonoInternet'], consultajson['telefonoWifi'], consultajson['telefonoBluetooth'], consultajson['captahuella'], consultajson['rfid'], consultajson['reconocimientoFacial'],)
                                             usuariosServidor.append(tuplaUsuarioIndividual)
                                         for usuario in usuariosServidor:
                                             # contador=contador+1
@@ -119,20 +119,26 @@ while True:
                                             # print(usuario)
                                             if not usuario in usuarios_local:
                                                 id_usuario=usuario[0]
-                                                telegram_id=usuario[1]
-                                                entrada_beacon_uuid=usuario[2]
-                                                salida_beacon_uuid=usuario[3]
-                                                internet=usuario[4]
-                                                wifi=usuario[5]
-                                                bluetooth=usuario[6]
-                                                captahuella=usuario[7]
-                                                rfid=usuario[8]
-                                                facial=usuario[9]
-                                                cursorlocal.execute("UPDATE web_usuarios SET telegram_id=%s, entrada_beacon_uuid=%s, salida_beacon_uuid=%s, internet=%s, wifi=%s, bluetooth=%s, captahuella=%s, rfid=%s, facial=%s WHERE id=%s", (telegram_id,entrada_beacon_uuid,salida_beacon_uuid,internet,wifi,bluetooth,captahuella,rfid,facial,id_usuario))
+                                                rol=usuario[1]
+                                                cedula=usuario[2]
+                                                nombre=usuario[3]
+                                                telegram_id=usuario[4]
+                                                numero_telefonico=usuario[5]
+                                                cedula_propietario=usuario[6]
+                                                unidad_id=usuario[7]
+                                                entrada_beacon_uuid=usuario[8]
+                                                salida_beacon_uuid=usuario[9]
+                                                internet=usuario[10]
+                                                wifi=usuario[11]
+                                                bluetooth=usuario[12]
+                                                captahuella=usuario[13]
+                                                rfid=usuario[14]
+                                                facial=usuario[15]
+                                                cursorlocal.execute("UPDATE web_usuarios SET rol=%s, cedula=%s, nombre=%s, telegram_id=%s, numero_telefonico=%s, cedula_propietario=%s, unidad_id=%s, entrada_beacon_uuid=%s, salida_beacon_uuid=%s, internet=%s, wifi=%s, bluetooth=%s, captahuella=%s, rfid=%s, facial=%s WHERE id=%s", (rol, cedula, nombre, telegram_id, numero_telefonico, cedula_propietario, unidad_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial, id_usuario))
                                                 connlocal.commit()
                                         usuariosServidor=[]
                                     else:
-                                        cursorlocal.execute('SELECT rol, cedula, nombre, telegram_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial FROM web_usuarios WHERE id=%s',(idUsuario,))
+                                        cursorlocal.execute('SELECT id, rol, cedula, nombre, telegram_id, numero_telefonico, cedula_propietario, unidad_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial FROM web_usuarios WHERE id=%s',(idUsuario,))
                                         usuario_local= cursorlocal.fetchall()
 
                                         request_json_usuario = requests.get(url=f'{URL_API}usuarioindividualapi/{CONTRATO}/{idUsuario}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
@@ -173,6 +179,9 @@ while True:
                                                 cedula=consultajson['cedula']
                                                 nombre=consultajson['nombre']
                                                 telegram_id=consultajson['telegram_id']
+                                                numero_telefonico=consultajson['numero_telefonico']
+                                                cedula_propietario=consultajson['cedula_propietario']
+                                                unidad_id=consultajson['unidad_id']
                                                 entrada_beacon_uuid=consultajson['entrada_beacon_uuid']
                                                 salida_beacon_uuid=consultajson['salida_beacon_uuid']
                                                 internet=consultajson['telefonoInternet']
@@ -181,16 +190,19 @@ while True:
                                                 captahuella=consultajson['captahuella']
                                                 rfid=consultajson['rfid']
                                                 facial=consultajson['reconocimientoFacial']
-                                            cursorlocal.execute('''INSERT INTO web_usuarios (id, rol, cedula, nombre, telegram_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial)
-                                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''', (id_usuario, rol, cedula, nombre, telegram_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial))
+                                            cursorlocal.execute('''INSERT INTO web_usuarios (id, rol, cedula, nombre, telegram_id, numero_telefonico, cedula_propietario, unidad_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial)
+                                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''', (id_usuario, rol, cedula, nombre, telegram_id, numero_telefonico, cedula_propietario, unidad_id, entrada_beacon_uuid, salida_beacon_uuid, internet, wifi, bluetooth, captahuella, rfid, facial))
                                             connlocal.commit()
                                         elif usuarioLocal and usuarioServidor:
                                             for consultajson in request_json_usuario:
                                                 id_usuario=consultajson['id']
+                                                rol=consultajson['rol']
                                                 cedula=consultajson['cedula']
                                                 nombre=consultajson['nombre']
-                                                rol=consultajson['rol']
                                                 telegram_id=consultajson['telegram_id']
+                                                numero_telefonico=consultajson['numero_telefonico']
+                                                cedula_propietario=consultajson['cedula_propietario']
+                                                unidad_id=consultajson['unidad_id']
                                                 entrada_beacon_uuid=consultajson['entrada_beacon_uuid']
                                                 salida_beacon_uuid=consultajson['salida_beacon_uuid']
                                                 internet=consultajson['telefonoInternet']
@@ -199,7 +211,7 @@ while True:
                                                 captahuella=consultajson['captahuella']
                                                 rfid=consultajson['rfid']
                                                 facial=consultajson['reconocimientoFacial']
-                                            cursorlocal.execute("UPDATE web_usuarios SET rol=%s, cedula=%s, nombre=%s, telegram_id=%s, entrada_beacon_uuid=%s, salida_beacon_uuid=%s, internet=%s, wifi=%s, bluetooth=%s, captahuella=%s, rfid=%s, facial=%s WHERE id=%s", (rol, cedula, nombre, telegram_id, entrada_beacon_uuid, salida_beacon_uuid, internet,wifi,bluetooth,captahuella,rfid,facial,id_usuario))
+                                            cursorlocal.execute("UPDATE web_usuarios SET rol=%s, cedula=%s, nombre=%s, telegram_id=%s, numero_telefonico=%s, cedula_propietario=%s, unidad_id=%s, entrada_beacon_uuid=%s, salida_beacon_uuid=%s, internet=%s, wifi=%s, bluetooth=%s, captahuella=%s, rfid=%s, facial=%s WHERE id=%s", (rol, cedula, nombre, telegram_id, numero_telefonico, cedula_propietario, unidad_id, entrada_beacon_uuid, salida_beacon_uuid, internet,wifi,bluetooth,captahuella,rfid,facial,id_usuario))
                                             connlocal.commit()
                                 except requests.exceptions.ConnectionError:
                                     print("fallo consultando api en usuarios")
@@ -405,67 +417,109 @@ while True:
                     print(f"{e} - fallo en api para obtener cambios")
             
             if total_log > TIEMPO_LOG:
+                tz = pytz.timezone('America/Caracas')
+                caracas_now = datetime.now(tz)
+                fechahoy=str(caracas_now)[:10]
+                if fechahoy != fechaayer:
+                    fechaayer=fechahoy
+                    tupla_fecha_hoy=(fechahoy,)
+                    cursorlocal.execute('SELECT fecha FROM dias_acumulados')
+                    dias_acumulados= cursorlocal.fetchall()
+                    nro_dias_acumulados=len(dias_acumulados)
+
+                    if nro_dias_acumulados >= maximo_dias_acumular:
+                        cursorlocal.execute('DELETE FROM web_interacciones *')
+                        cursorlocal.execute('DELETE FROM dias_acumulados *')
+                        connlocal.commit()
+                        
+                    if not tupla_fecha_hoy in dias_acumulados:
+                        cursorlocal.execute('''INSERT INTO dias_acumulados (fecha)
+                        VALUES (%s);''', (fechahoy,))
+                        connlocal.commit()
+
                 try:
-                    tz = pytz.timezone('America/Caracas')
-                    caracas_now = datetime.now(tz)
-                    fechahoy=str(caracas_now)[:10]
+                    cursorlocal.execute('SELECT * FROM web_interacciones where contrato=%s and fecha=%s', (CONTRATO,fechahoy))
+                    interacciones_local= cursorlocal.fetchall()
+                
+                    request_json = requests.get(url=f'{URL_API}obtenerinteraccionesapi/{CONTRATO}/{fechahoy}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
 
-                    if fechahoy != fechaayer:
-                        fechaayer=fechahoy
-                        tupla_fecha_hoy=(fechahoy,)
-                        cursorlocal.execute('SELECT fecha FROM dias_acumulados')
-                        dias_acumulados= cursorlocal.fetchall()
-                        nro_dias_acumulados=len(dias_acumulados)
+                    listaLogsServidor=[]
+                    for consultajson in request_json:
+                        objetofecha= date.fromisoformat(consultajson['fecha'])
+                        objetohora=time.fromisoformat(consultajson['hora'])
+                        tuplaLogIndividual=(consultajson['nombre'],objetofecha,objetohora,consultajson['razon'],consultajson['contrato'],consultajson['cedula'])
+                        listaLogsServidor.append(tuplaLogIndividual)
 
-                        if nro_dias_acumulados >= maximo_dias_acumular:
-                            cursorlocal.execute('DELETE FROM web_interacciones *')
-                            cursorlocal.execute('DELETE FROM dias_acumulados *')
-                            connlocal.commit()
-                            
-                        if not tupla_fecha_hoy in dias_acumulados:
-                            cursorlocal.execute('''INSERT INTO dias_acumulados (fecha)
-                            VALUES (%s);''', (fechahoy,))
-                            connlocal.commit()
+                    nro_int_local = len(interacciones_local)
+                    nro_int_servidor = len(listaLogsServidor)
 
-                    try:
-                        cursorlocal.execute('SELECT * FROM web_interacciones where contrato=%s and fecha=%s', (CONTRATO,fechahoy))
-                        interacciones_local= cursorlocal.fetchall()
-                    
-                        request_json = requests.get(url=f'{URL_API}obtenerinteraccionesapi/{CONTRATO}/{fechahoy}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
+                    if nro_int_local != nro_int_servidor:
 
-                        listaLogsServidor=[]
-                        for consultajson in request_json:
-                            objetofecha= date.fromisoformat(consultajson['fecha'])
-                            objetohora=time.fromisoformat(consultajson['hora'])
-                            tuplaLogIndividual=(consultajson['nombre'],objetofecha,objetohora,consultajson['razon'],consultajson['contrato'],consultajson['cedula'])
-                            listaLogsServidor.append(tuplaLogIndividual)
-
-                        nro_int_local = len(interacciones_local)
-                        nro_int_servidor = len(listaLogsServidor)
-
-                        if nro_int_local != nro_int_servidor:
-
-                            for interaccion in interacciones_local:
-                                if not interaccion in listaLogsServidor:
-                                    nombre=interaccion[0]
-                                    fecha=interaccion[1]
-                                    hora=interaccion[2]
-                                    razon=interaccion[3]
-                                    cedula=interaccion[5]
-                                    anadirLogJson = {
-                                        "nombre": nombre,
-                                        "fecha": fecha.isoformat(),
-                                        "hora": hora.isoformat(),
-                                        "razon": razon,
-                                        "contrato": CONTRATO,
-                                        "cedula": cedula
-                                    }
-                                    requests.post(url=f'{URL_API}registrarinteraccionesapi/', 
-                                    json=anadirLogJson, auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3)
-                    except requests.exceptions.ConnectionError:
-                        print("fallo consultando api de logs")
+                        for interaccion in interacciones_local:
+                            if not interaccion in listaLogsServidor:
+                                nombre=interaccion[0]
+                                fecha=interaccion[1]
+                                hora=interaccion[2]
+                                razon=interaccion[3]
+                                cedula=interaccion[5]
+                                anadirLogJson = {
+                                    "nombre": nombre,
+                                    "fecha": fecha.isoformat(),
+                                    "hora": hora.isoformat(),
+                                    "razon": razon,
+                                    "contrato": CONTRATO,
+                                    "cedula": cedula
+                                }
+                                requests.post(url=f'{URL_API}registrarinteraccionesapi/', 
+                                json=anadirLogJson, auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3)
                 except Exception as e:
-                    print(f"{e} - fallo total al subir Log")
+                    print(f"{e} - fallo total en Log de usuarios")
+            
+
+                try:
+                    cursorlocal.execute('SELECT vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razon, personas FROM web_logs_vigilantes where contrato=%s and fecha=%s', (CONTRATO, fechahoy))
+                    logsVigilantes_local= cursorlocal.fetchall()
+                    
+                    request_json = requests.get(url=f'{URL_API}obtenerlogsvigilantesapi/{CONTRATO}/{fechahoy}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
+
+                    listaLogsVigilantesServidor=[]
+                    for consultajson in request_json:
+                        objetofecha= date.fromisoformat(consultajson['fecha'])
+                        objetohora=time.fromisoformat(consultajson['hora'])
+                        tuplaLogIndividual=(consultajson['vigilante_id'],consultajson['vigilante_nombre'],consultajson['unidad_id'],consultajson['unidad_nombre'],objetofecha,objetohora,consultajson['razon'], consultajson['personas'])
+                        listaLogsVigilantesServidor.append(tuplaLogIndividual)
+
+                    nro_int_local = len(logsVigilantes_local)
+                    nro_log_vig_servidor = len(listaLogsVigilantesServidor)
+
+                    if nro_int_local != nro_log_vig_servidor:
+
+                        for logVigilante in logsVigilantes_local:
+                            if not logVigilante in listaLogsVigilantesServidor:
+                                vigilante_id=logVigilante[0]
+                                vigilante_nombre=logVigilante[1]
+                                unidad_id=logVigilante[2]
+                                unidad_nombre=logVigilante[3]
+                                fecha=logVigilante[4]
+                                hora=logVigilante[5]
+                                razon=logVigilante[6]
+                                personas=logVigilante[7]
+                                anadirLogJson = {
+                                    "vigilante_nombre": vigilante_nombre,
+                                    "vigilante_id": vigilante_id,
+                                    "unidad_id": unidad_id,
+                                    "unidad_nombre": unidad_nombre,
+                                    "fecha": fecha.isoformat(),
+                                    "hora": hora.isoformat(),
+                                    "razon": razon,
+                                    "contrato": CONTRATO,
+                                    "personas": personas,
+                                }
+                                requests.post(url=f'{URL_API}registrarlogsvigilantesapi/', 
+                                json=anadirLogJson, auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3)
+                except Exception as e:
+                    print(f"{e} - fallo total en Log de vigilantes")
+
                 BorrarPeticionesListas=True
                 t1_log=tm.perf_counter()
 

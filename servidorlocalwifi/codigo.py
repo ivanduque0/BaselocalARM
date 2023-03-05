@@ -7,6 +7,8 @@ from datetime import datetime
 import requests
 
 URL_API = os.environ.get("URL_API")
+NUMERO_BOT = os.environ.get("NUMERO_BOT")
+APIKEY_BOT = os.environ.get("APIKEY_BOT")
 hostName = '0.0.0.0'
 serverPort = 43157
 conn = None
@@ -139,6 +141,29 @@ razondictrfids = {'1':razonrfid1, '2':razonrfid2, '3':razonrfid3, '4':razonrfid4
 #     finally:
 #         pass
 
+def aperturaConcedidaVigilante(vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, contrato, cursorf, connf, acceso, razon, personas):
+    try:
+        if accesodict[acceso]:
+            razonRegistrar=f"{razondict[acceso]}" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}-{razon}"
+            requests.get(f'{accesodict[acceso]}/on', timeout=4)
+            cursorf.execute('''INSERT INTO web_logs_vigilantes (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razon, contrato, personas)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razonRegistrar, contrato, personas))
+            connf.commit()
+            if razon=='entrada':
+                mensaje=f'Se ha dejado ingresar {personas} persona a su unidad' if (personas=='1' or personas=='0') else f"Se han dejado ingresar {personas} personas a su unidad"
+            else:
+                mensaje=f'{personas} persona ha salido de su unidad' if (personas=='1' or personas=='0') else f"{personas} personas han salido de su unidad"
+            cursorf.execute('SELECT numero_telefonico FROM web_usuarios WHERE unidad_id=%s AND rol=%s',(unidad_id,'Propietario'))
+            propietarios_unidad= cursorf.fetchall()
+            for propietario in propietarios_unidad:
+                requests.get(f'https://api.callmebot.com/whatsapp.php?phone={NUMERO_BOT}&text=!sendto+{propietario[0][1:]}+{mensaje}&apikey={APIKEY_BOT}', timeout=5)
+    except Exception as e:
+        cursorf.execute('''INSERT INTO web_logs_vigilantes (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razon, contrato)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, f"fallo_{razonRegistrar}", contrato, personas))
+        connf.commit()
+        print(f"{e} - fallo intentando abrir el acceso {acceso} con permiso de vigilante")
+
+
 def controlhorariovisitante(cursorf, connf, horario_id, razon):
     abrir=False
     cantidad_aperturas=0
@@ -148,7 +173,7 @@ def controlhorariovisitante(cursorf, connf, horario_id, razon):
         if razon=='entrada':
             cursorf.execute('''INSERT INTO control_horarios_visitantes (horario_id, aperturas_hechas) 
             VALUES (%s, %s)''', (horario_id, 0))
-            conn.commit()
+            connf.commit()
             abrir=True
     elif control_visitante[0][0]<2:
         if razon=='salida':
@@ -376,6 +401,40 @@ class MyServer(BaseHTTPRequestHandler):
             self.end_headers()
             acceso_solicitud, _ = peticion
             aperturadenegada(cursor, conn, acceso_solicitud)
+
+        if len(peticion) == 6 and peticion[5] == "seguricel_wifi_vigilante":
+            # self.wfile.write(bytes(f"{self.path[1::]}", "utf-8"))
+            id_usuario, codigo_unidad, personas, acceso_solicitud, razonApertura, _ = peticion
+            # print(codigo_unidad)
+            # print(personas)
+            # print(acceso_solicitud)
+            # print(razonApertura)
+
+            cursor.execute("SELECT id, nombre FROM web_usuarios where telegram_id=%s", (id_usuario,))
+            datosVigilante = cursor.fetchall()
+            cursor.execute("SELECT id, nombre FROM web_unidades where codigo=%s", (codigo_unidad,))
+            datosUnidad = cursor.fetchall()
+            
+            # print(datosUnidad)
+            if len(datosUnidad)!=0 and len(datosVigilante)!=0:
+                tz = pytz.timezone('America/Caracas')
+                caracas_now = datetime.now(tz)
+                hora=str(caracas_now)[11:19]
+                fecha=str(caracas_now)[:10]
+                unidad_id=datosUnidad[0][0]
+                unidad_nombre=datosUnidad[0][1]
+                vigilante_id=datosVigilante[0][0]
+                vigilante_nombre=datosVigilante[0][1]
+                
+                aperturaConcedidaVigilante(vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, CONTRATO, cursor, conn, acceso_solicitud, razonApertura, personas)
+                self.send_response(200)
+                self.send_header("Content-type", "utf-8")
+                self.end_headers()
+            else:
+                aperturadenegada(cursor, conn, acceso_solicitud)
+                self.send_response(400)
+                self.send_header("Content-type", "utf-8")
+                self.end_headers()
 
         if len(peticion) == 4 and peticion[3] == "seguricel_wifi_activo":
             self.send_response(200)
