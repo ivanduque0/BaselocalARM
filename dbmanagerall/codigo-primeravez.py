@@ -194,10 +194,10 @@ try:
                         else:
                             entradaObjetofecha=None
                             salidaObjetofecha=None
-                        TuplaHorarioIndividual=(consultajson['id'],consultajson['usuario'],entradaObjetofecha,salidaObjetofecha,entradaObjetohora,salidaObjetohora,consultajson['cedula'],consultajson['dia'],)
+                        TuplaHorarioIndividual=(consultajson['id'],consultajson['usuario'],entradaObjetofecha,salidaObjetofecha,entradaObjetohora,salidaObjetohora,consultajson['cedula'],consultajson['dia'],consultajson['acompanantes'])
                         horariosServidor.append(TuplaHorarioIndividual)
                     
-                    cursorlocal.execute('SELECT id, usuario, fecha_entrada, fecha_salida, entrada, salida, cedula_id, dia FROM web_horariospermitidos')
+                    cursorlocal.execute('SELECT id, usuario, fecha_entrada, fecha_salida, entrada, salida, cedula_id, dia, acompanantes FROM web_horariospermitidos')
                     horariosLocal= cursorlocal.fetchall()
 
                     print(f'horarios en local: {len(horariosLocal)}')
@@ -220,8 +220,9 @@ try:
                             salida=horario[5]
                             cedula=horario[6]
                             dia=horario[7]
-                            cursorlocal.execute('''INSERT INTO web_horariospermitidos (id, usuario, fecha_entrada, fecha_salida, entrada, salida, cedula_id, dia)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s);''', (horario_id, usuario_id, fecha_entrada, fecha_salida, entrada, salida, cedula, dia))
+                            acompanantes=horario[8]
+                            cursorlocal.execute('''INSERT INTO web_horariospermitidos (id, usuario, fecha_entrada, fecha_salida, entrada, salida, cedula_id, dia, acompanantes)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);''', (horario_id, usuario_id, fecha_entrada, fecha_salida, entrada, salida, cedula, dia, acompanantes))
                             connlocal.commit()
                     contador=0
                     for horariosLocaliterar in horariosLocal:

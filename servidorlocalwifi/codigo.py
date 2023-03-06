@@ -163,6 +163,27 @@ def aperturaConcedidaVigilante(vigilante_id, vigilante_nombre, unidad_id, unidad
         connf.commit()
         print(f"{e} - fallo intentando abrir el acceso {acceso} con permiso de vigilante")
 
+def aperturaConcedidaVigilanteVisitante(vigilante_id, vigilante_nombre, nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, razon, horario_id, aperturasRealizadas, acompanantes, cedula_propietario, numero_propietario):
+    try:
+        if accesodict[acceso]:
+            razonRegistrar=f"{razondict[acceso]}(vigilante)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(vigilante)-{razon}"
+            requests.get(f'{accesodict[acceso]}/on', timeout=4)
+            cursorf.execute('UPDATE control_horarios_visitantes SET aperturas_hechas=%s WHERE horario_id=%s', (aperturasRealizadas+1,horario_id))
+            cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado)
+            VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
+            cursorf.execute('''INSERT INTO web_logs_visitantes (vigilante_id, vigilante_nombre, nombre, fecha, hora, razon, contrato, cedula_id, acompanantes, cedula_propietario)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf, acompanantes, cedula_propietario))
+            connf.commit()
+            if razon=='entrada':
+                mensaje=f"El invitado {nombref} acaba de ingresar por medio del sistema de vigilancia"
+            else:
+                mensaje=f"El invitado {nombref} acaba de salir por medio del sistema de vigilancia"
+            requests.get(f'https://api.callmebot.com/whatsapp.php?phone={NUMERO_BOT}&text=!sendto+{numero_propietario[1:]}+{mensaje}&apikey={APIKEY_BOT}', timeout=5)
+    except Exception as e:
+        cursorf.execute('''INSERT INTO web_logs_visitantes (vigilante_id, vigilante_nombre, nombre, fecha, hora, razon, contrato, cedula_id, acompanantes, cedula_propietario)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, nombref, fechaf, horaf, f"fallo_{razonRegistrar}", contratof, cedulaf, acompanantes, cedula_propietario))
+        connf.commit()
+        print(f"{e} - fallo intentando abrir el acceso {acceso} con permiso de vigilante")
 
 def controlhorariovisitante(cursorf, connf, horario_id, razon):
     abrir=False
@@ -313,27 +334,28 @@ def aperturaconcedidabluetooth(nombref, fechaf, horaf, contratof, cedulaf, curso
     finally:
         pass
 
-def aperturaconcedidabluetoothvisitante(nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, razon, horario_id, aperturasRealizadas):
+def aperturaconcedidabluetoothvisitante(nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, razon, horario_id, aperturasRealizadas, acompanantes, cedula_propietario, numero_propietario):
 
     try:
         if accesodict[acceso]:
-            razonRegistrar=f"{razondict[acceso]}(Bluetooth)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(Bluetooth)-{razon}"
-            requests.get(f'{accesodict[acceso]}/on', timeout=2)
+            razonRegistrar=f"{razondict[acceso]}(bluetooth)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(bluetooth)-{razon}"
+            requests.get(f'{accesodict[acceso]}/on', timeout=4)
             cursorf.execute('UPDATE control_horarios_visitantes SET aperturas_hechas=%s WHERE horario_id=%s', (aperturasRealizadas+1,horario_id))
-            cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
-            VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, CONTRATO, cedulaf))
-            #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
-            # connf.commit()
-            cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado) 
+            cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado)
             VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
+            cursorf.execute('''INSERT INTO web_logs_visitantes (nombre, fecha, hora, razon, contrato, cedula_id, acompanantes, cedula_propietario)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf, acompanantes, cedula_propietario))
             connf.commit()
-    except:
-        cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
-        VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f'fallo_{razonRegistrar}', contratof, cedulaf))
-        #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
+            if razon=='entrada':
+                mensaje=f"El invitado {nombref} acaba de ingresar por medio de bluetooth"
+            else:
+                mensaje=f"El invitado {nombref} acaba de salir por medio de bluetooth"
+            requests.get(f'https://api.callmebot.com/whatsapp.php?phone={NUMERO_BOT}&text=!sendto+{numero_propietario[1:]}+{mensaje}&apikey={APIKEY_BOT}', timeout=5)
+    except Exception as e:
+        cursorf.execute('''INSERT INTO web_logs_visitantes (vigilante_id, vigilante_nombre, nombre, fecha, hora, razon, contrato, cedula_id, acompanantes, cedula_propietario)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f"fallo_{razonRegistrar}", contratof, cedulaf, acompanantes, cedula_propietario))
         connf.commit()
-    finally:
-        pass
+        print(f"{e} - fallo intentando abrir el acceso {acceso} por bluetooth")
 
 def aperturadenegada(cursorf, connf, acceso):
     # cursorf.execute('''UPDATE led SET onoff=2 WHERE onoff=0;''')
@@ -430,6 +452,65 @@ class MyServer(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-type", "utf-8")
                 self.end_headers()
+            else:
+                aperturadenegada(cursor, conn, acceso_solicitud)
+                self.send_response(400)
+                self.send_header("Content-type", "utf-8")
+                self.end_headers()
+        
+        if len(peticion) == 6 and peticion[5] == "seguricel_wifi_vigilante_invitado":
+            # self.wfile.write(bytes(f"{self.path[1::]}", "utf-8"))
+            id_usuario, horario_id, acompanantes, acceso_solicitud, razonApertura, _ = peticion
+            # print(codigo_unidad)
+            # print(personas)
+            # print(acceso_solicitud)
+            # print(razonApertura)
+
+            cursor.execute("SELECT id, nombre FROM web_usuarios where telegram_id=%s", (id_usuario,))
+            datosVigilante = cursor.fetchall()
+            cursor.execute("SELECT usuario, fecha_entrada, fecha_salida, entrada, salida FROM web_horariospermitidos where id=%s", (int(horario_id),))
+            datosHorario = cursor.fetchall()
+
+
+            if len(datosHorario)!=0:
+                cursor.execute("SELECT cedula, nombre, cedula_propietario FROM web_usuarios where id=%s", (int(datosHorario[0][0]),))
+                datosInvitado = cursor.fetchall()
+                cursor.execute("SELECT numero_telefonico FROM web_usuarios where cedula=%s", (datosInvitado[0][2],))
+                datosPropietario = cursor.fetchall()
+                if len(datosInvitado)!=0 and len(datosPropietario)!=0:
+                    tz = pytz.timezone('America/Caracas')
+                    caracas_now = datetime.now(tz)
+                    horahoy = caracas_now.time()
+                    fechahoy = caracas_now.date()
+                    for _, fecha_entrada, fecha_salida, entrada, salida in datosHorario:
+                        if (fechahoy==fecha_entrada and horahoy>=entrada) or (fechahoy > fecha_entrada and fechahoy<fecha_salida) or (fechahoy==fecha_salida and horahoy<=salida):
+                            permitir, aperturasRealizadas = controlhorariovisitante(cursor, conn, horario_id, razonApertura)
+                            if permitir:
+                                invitado_cedula=datosInvitado[0][0]
+                                invitado_nombre=datosInvitado[0][1]
+                                vigilante_id=datosVigilante[0][0]
+                                vigilante_nombre=datosVigilante[0][1]
+                                fecha=str(caracas_now)[:10]
+                                
+                                aperturaConcedidaVigilanteVisitante(vigilante_id, vigilante_nombre, invitado_nombre, fecha, horahoy, CONTRATO, invitado_cedula, cursor, conn, acceso_solicitud, razonApertura, horario_id, aperturasRealizadas, acompanantes, datosInvitado[0][2], datosPropietario[0][0])
+                                self.send_response(200)
+                                self.send_header("Content-type", "utf-8")
+                                self.end_headers()
+                            else:
+                                aperturadenegada(cursor, conn, acceso_solicitud)
+                                self.send_response(200)
+                                self.send_header("Content-type", "utf-8")
+                                self.end_headers()  
+                        else:
+                            aperturadenegada(cursor, conn, acceso_solicitud)
+                            self.send_response(200)
+                            self.send_header("Content-type", "utf-8")
+                            self.end_headers()
+                else:
+                    aperturadenegada(cursor, conn, acceso_solicitud)
+                    self.send_response(200)
+                    self.send_header("Content-type", "utf-8")
+                    self.end_headers()
             else:
                 aperturadenegada(cursor, conn, acceso_solicitud)
                 self.send_response(400)
@@ -583,11 +664,11 @@ class MyServer(BaseHTTPRequestHandler):
             etapadiaapertura=0
             cantidaddias = 0
             contadoraux = 0
-            cursor.execute("SELECT cedula, nombre, bluetooth, rol, id FROM web_usuarios where entrada_beacon_uuid=%s", (uuid_usuario,))
+            cursor.execute("SELECT cedula, nombre, bluetooth, rol, id, cedula_propietario FROM web_usuarios where entrada_beacon_uuid=%s", (uuid_usuario,))
             datosUsuario = cursor.fetchall()
             razonApertura='entrada'
             if not datosUsuario:
-                cursor.execute("SELECT cedula, nombre, bluetooth, rol, id FROM web_usuarios where salida_beacon_uuid=%s", (uuid_usuario,))
+                cursor.execute("SELECT cedula, nombre, bluetooth, rol, id, cedula_propietario FROM web_usuarios where salida_beacon_uuid=%s", (uuid_usuario,))
                 datosUsuario = cursor.fetchall()
                 razonApertura='salida'
             #print(datosUsuario)
@@ -597,17 +678,18 @@ class MyServer(BaseHTTPRequestHandler):
                 permisoAperturaBluetooth = datosUsuario[0][2]
                 rol=datosUsuario[0][3]
                 usuario_id=datosUsuario[0][4]
-                cursor.execute('SELECT id, fecha_entrada, fecha_salida, entrada, salida, dia FROM web_horariospermitidos where usuario=%s', (usuario_id,))
+                cedula_propietario=datosUsuario[0][5]
+                cursor.execute('SELECT id, fecha_entrada, fecha_salida, entrada, salida, dia, acompanantes FROM web_horariospermitidos where usuario=%s', (usuario_id,))
                 horarios_permitidos = cursor.fetchall()
                 if horarios_permitidos != [] and permisoAperturaBluetooth == True and rol=='Secundario':
                     tz = pytz.timezone('America/Caracas')
                     caracas_now = datetime.now(tz)
                     dia = caracas_now.weekday()
                     diahoy = dias_semana[dia]
-                    for _, _, _, entrada, salida, dia in horarios_permitidos:
+                    for _, _, _, entrada, salida, dia, _ in horarios_permitidos:
                         diasusuario.append(dia)
                     cantidaddias = diasusuario.count(dia)
-                    for _, _, _, entrada, salida, dia in horarios_permitidos:
+                    for _, _, _, entrada, salida, dia, _ in horarios_permitidos:
                         if 'Siempre' in diasusuario:
                             hora=str(caracas_now)[11:19]
                             horahoy = datetime.strptime(hora, '%H:%M:%S').time()
@@ -681,16 +763,18 @@ class MyServer(BaseHTTPRequestHandler):
                     #aperturaconcedidawifi(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud)
                     aperturaconcedidabluetooth(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, razonApertura)
                 elif (horarios_permitidos != [] and permisoAperturaBluetooth == True and rol=='Visitante'):
+                    cursor.execute("SELECT numero_telefonico FROM web_usuarios where cedula=%s", (cedula_propietario,))
+                    datosPropietario = cursor.fetchall()
                     tz = pytz.timezone('America/Caracas')
                     caracas_now = datetime.now(tz)
                     horahoy = caracas_now.time()
                     fechahoy = caracas_now.date()
-                    for horario_id, fecha_entrada, fecha_salida, entrada, salida, _ in horarios_permitidos:
+                    for horario_id, fecha_entrada, fecha_salida, entrada, salida, _, acompanantes in horarios_permitidos:
                         if (fechahoy==fecha_entrada and horahoy>=entrada) or (fechahoy > fecha_entrada and fechahoy<fecha_salida) or (fechahoy==fecha_salida and horahoy<=salida):
                             permitir, aperturasRealizadas = controlhorariovisitante(cursor, conn, horario_id, razonApertura)
-                            if permitir:
+                            if permitir and len(datosPropietario):
                                 fecha=str(caracas_now)[:10]
-                                aperturaconcedidabluetoothvisitante(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, razonApertura, horario_id, aperturasRealizadas)
+                                aperturaconcedidabluetoothvisitante(nombre, fecha, horahoy, CONTRATO, cedula, cursor, conn, acceso_solicitud, razonApertura, horario_id, aperturasRealizadas, acompanantes, cedula_propietario, datosPropietario[0][0])
                             else:
                                 aperturadenegada(cursor, conn, acceso_solicitud)  
                         else:

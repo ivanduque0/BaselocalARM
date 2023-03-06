@@ -181,7 +181,7 @@ while True:
                                                 telegram_id=consultajson['telegram_id']
                                                 numero_telefonico=consultajson['numero_telefonico']
                                                 cedula_propietario=consultajson['cedula_propietario']
-                                                unidad_id=consultajson['unidad_id']
+                                                unidad_id=consultajson['unidad']
                                                 entrada_beacon_uuid=consultajson['entrada_beacon_uuid']
                                                 salida_beacon_uuid=consultajson['salida_beacon_uuid']
                                                 internet=consultajson['telefonoInternet']
@@ -202,7 +202,7 @@ while True:
                                                 telegram_id=consultajson['telegram_id']
                                                 numero_telefonico=consultajson['numero_telefonico']
                                                 cedula_propietario=consultajson['cedula_propietario']
-                                                unidad_id=consultajson['unidad_id']
+                                                unidad_id=consultajson['unidad']
                                                 entrada_beacon_uuid=consultajson['entrada_beacon_uuid']
                                                 salida_beacon_uuid=consultajson['salida_beacon_uuid']
                                                 internet=consultajson['telefonoInternet']
@@ -242,10 +242,10 @@ while True:
                                             entradaObjetofecha=None
                                             salidaObjetofecha=None
                                         
-                                        TuplaHorarioIndividual=(consultajson['id'], consultajson['usuario'],entradaObjetofecha,salidaObjetofecha,entradaObjetohora,salidaObjetohora,consultajson['cedula'],consultajson['dia'],)
+                                        TuplaHorarioIndividual=(consultajson['id'], consultajson['usuario'],entradaObjetofecha,salidaObjetofecha,entradaObjetohora,salidaObjetohora,consultajson['cedula'],consultajson['dia'],consultajson['acompanantes'])
                                         horariosServidor.append(TuplaHorarioIndividual)
                                     
-                                    cursorlocal.execute('SELECT id, usuario, fecha_entrada, fecha_salida, entrada, salida, cedula_id, dia FROM web_horariospermitidos WHERE usuario=%s',(idUsuario,))
+                                    cursorlocal.execute('SELECT id, usuario, fecha_entrada, fecha_salida, entrada, salida, cedula_id, dia, acompanantes FROM web_horariospermitidos WHERE usuario=%s',(idUsuario,))
                                     horariosLocal= cursorlocal.fetchall()
 
                                     for horario in horariosServidor:
@@ -258,8 +258,9 @@ while True:
                                             salida=horario[5]
                                             cedula=horario[6]
                                             dia=horario[7]
-                                            cursorlocal.execute('''INSERT INTO web_horariospermitidos (id, usuario, fecha_entrada, fecha_salida, entrada, salida, cedula_id, dia)
-                                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s);''', (horario_id, usuario_id, fecha_entrada, fecha_salida, entrada, salida, cedula, dia))
+                                            acompanantes=horario[8]
+                                            cursorlocal.execute('''INSERT INTO web_horariospermitidos (id, usuario, fecha_entrada, fecha_salida, entrada, salida, cedula_id, dia, acompanantes)
+                                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);''', (horario_id, usuario_id, fecha_entrada, fecha_salida, entrada, salida, cedula, dia, acompanantes))
                                             connlocal.commit()
 
                                     for horariosLocaliterar in horariosLocal:
