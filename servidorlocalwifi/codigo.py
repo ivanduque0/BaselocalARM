@@ -150,9 +150,9 @@ def aperturaConcedidaVigilante(vigilante_id, vigilante_nombre, unidad_id, unidad
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razonRegistrar, contrato, personas))
             connf.commit()
             if razon=='entrada':
-                mensaje=f'Se ha dejado ingresar {personas} persona a su unidad' if (personas=='1' or personas=='0') else f"Se han dejado ingresar {personas} personas a su unidad"
+                mensaje=f'El vigilante ha dejado entrar {personas} que se dirige a su hogar' if (personas=='1' or personas=='0') else f"El vigilante ha dejado entrar {personas}  personas que se dirigen a su hogar"
             else:
-                mensaje=f'{personas} persona ha salido de su unidad' if (personas=='1' or personas=='0') else f"{personas} personas han salido de su unidad"
+                mensaje=f'El vigilante ha dejando salir {personas} persona proveniente de su hogar' if (personas=='1' or personas=='0') else f"El vigilante ha dejandor salir {personas} personas provenientes de su hogar"
             cursorf.execute('SELECT numero_telefonico FROM web_usuarios WHERE unidad_id=%s AND rol=%s',(unidad_id,'Propietario'))
             propietarios_unidad= cursorf.fetchall()
             for propietario in propietarios_unidad:
