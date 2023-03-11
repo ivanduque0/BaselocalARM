@@ -35,7 +35,8 @@ services:
 
    dbmanagerall:
    
-      image: ivanduque0/dbmakermanager:V0.3
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
+      # image: ivanduque0/dbmakerman:agerV0.3
 
       container_name: dbmanagerall
       
@@ -54,7 +55,7 @@ services:
 
    dispositivos:
    
-      image: ivanduque0/dbmakermanager:V0.3
+      image: ivanduque0/dbmakermanagerbot:ArmV6l
 
       container_name: dispositivos
       
