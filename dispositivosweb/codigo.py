@@ -130,14 +130,14 @@ while True:
         while True:
             try:
                 try:
-                    cursorlocal.execute('SELECT dispositivo, descripcion, estado, acceso FROM web_dispositivos')
+                    cursorlocal.execute('SELECT dispositivo, descripcion, estado, acceso, minor_id FROM web_dispositivos')
                     dispositivos_local= cursorlocal.fetchall()
 
                     request_json = requests.get(url=f'{URL_API}obtenerdispositivosapi/{CONTRATO}/', auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3).json()
 
                     dispositivosServidor=[]
                     for consultajson in request_json:
-                        tuplaDispositivoIndividual=(consultajson['dispositivo'],consultajson['descripcion'], consultajson['estado'], consultajson['acceso'],)
+                        tuplaDispositivoIndividual=(consultajson['dispositivo'],consultajson['descripcion'], consultajson['estado'], consultajson['acceso'], consultajson['minor_id'],)
                         dispositivosServidor.append(tuplaDispositivoIndividual)
 
                     if len(dispositivosServidor) != len(dispositivos_local):
@@ -148,7 +148,7 @@ while True:
 
                             dispositivosServidor=[]
                             for consultajson in request_json:
-                                tuplaDispositivoIndividual=(consultajson['dispositivo'],consultajson['descripcion'], consultajson['estado'], consultajson['acceso'],)
+                                tuplaDispositivoIndividual=(consultajson['dispositivo'],consultajson['descripcion'], consultajson['estado'], consultajson['acceso'], consultajson['minor_id'],)
                                 dispositivosServidor.append(tuplaDispositivoIndividual)
 
                             for dispositivolocal in dispositivos_local:
@@ -164,6 +164,7 @@ while True:
                                     descripcion=dispositivolocal[1]
                                     estado=dispositivolocal[2]
                                     acceso=dispositivolocal[3]
+                                    minor_id=dispositivolocal[4]
                                     agregarDispositivoJson = {
                                         "dispositivo": dispositivo,
                                         "descripcion": descripcion,
@@ -171,7 +172,8 @@ while True:
                                         "contrato": CONTRATO_ID,
                                         "acceso": acceso,
                                         "fecha": fecha,
-                                        "hora": hora
+                                        "hora": hora,
+                                        "minor_id": minor_id
                                     }
                                     requests.post(url=f'{URL_API}registrardispositivosapi/', 
                                     json=agregarDispositivoJson, auth=('BaseLocal_access', 'S3gur1c3l_local@'), timeout=3)
@@ -205,12 +207,7 @@ while True:
     
     except (Exception, psycopg2.Error) as error:
         print(f"{error} - fallo en hacer las consultas de base de datos de dispositivos")
-        if connlocal:
-            cursorlocal.close()
-            connlocal.close()
-    finally:
         print("se ha cerrado la conexion a la base de datos")
         if connlocal:
             cursorlocal.close()
             connlocal.close()
-            

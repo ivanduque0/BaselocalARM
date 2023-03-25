@@ -268,15 +268,15 @@ while True:
         cursorlocal = connlocal.cursor()
 
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_usuarios (id integer, rol varchar, cedula varchar(150), nombre varchar(255), telegram_id varchar(150), numero_telefonico varchar(150), cedula_propietario varchar(150), unidad_id integer, entrada_beacon_uuid varchar(150), salida_beacon_uuid varchar(150), internet boolean, wifi boolean, bluetooth boolean, captahuella boolean, rfid boolean, facial boolean)')
-        cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_interacciones (nombre varchar(255), fecha date, hora time without time zone, razon varchar(150), contrato text, cedula_id varchar(150))')
+        cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_logs_usuarios (nombre varchar(255), fecha date, hora time without time zone, razon varchar(150), contrato text, cedula_id varchar(150))')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_logs_vigilantes (vigilante_id integer, vigilante_nombre varchar(150), unidad_id integer, unidad_nombre varchar(150), fecha date, hora time without time zone, razon varchar(150), contrato text, personas integer)')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_logs_visitantes (vigilante_id integer, vigilante_nombre varchar(150), nombre varchar(255), fecha date, hora time without time zone, razon varchar(150), contrato text, cedula_id varchar(150), acompanantes integer, cedula_propietario varchar(150))')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_horariospermitidos (id integer, usuario integer, fecha_entrada date, fecha_salida date, entrada time without time zone, salida time without time zone, cedula_id varchar(150), dia varchar(180), acompanantes integer)')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS dias_acumulados (fecha varchar(150))')
-        cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_dispositivos (dispositivo varchar(150), descripcion varchar(150), estado varchar(150), acceso varchar(150))')
+        cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_dispositivos (dispositivo varchar(150), descripcion varchar(150), estado varchar(150), acceso varchar(150), minor_id integer)')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_huellas (id_suprema integer, cedula varchar(150), template text)')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_tagsrfid (epc text, cedula varchar(150))')
-        cursorlocal.execute('CREATE TABLE IF NOT EXISTS solicitud_aperturas (id integer, id_usuario varchar(150), acceso varchar(150), razon varchar(150), estado integer, peticionInternet boolean, feedback boolean)')
+        cursorlocal.execute('CREATE TABLE IF NOT EXISTS solicitud_aperturas (id integer, id_usuario varchar(150), acceso varchar(150), razon varchar(150), estado integer, peticionInternet boolean, feedback boolean, abriendo boolean, fecha date, hora time without time zone)')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS accesos_abiertos (cedula varchar(150), acceso varchar(150), fecha date, hora time without time zone, estado boolean)')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS control_horarios_visitantes (horario_id integer, aperturas_hechas integer)')
         cursorlocal.execute('CREATE TABLE IF NOT EXISTS web_unidades (id integer, nombre varchar(250), codigo integer)')
@@ -302,7 +302,8 @@ while True:
                     descripcion = accesos_dispositivos_dict[dispositivoAcceso]
                     acceso = accesos_dict[dispositivoAcceso]
                     estado = '0'
-                    cursorlocal.execute('INSERT INTO web_dispositivos values(%s, %s, %s, %s)',(dispositivoAcceso, descripcion, estado, acceso))
+                    minor_id=random.randint(1, 65535)
+                    cursorlocal.execute('INSERT INTO web_dispositivos values(%s, %s, %s, %s, %s)',(dispositivoAcceso, descripcion, estado, acceso, minor_id))
                     connlocal.commit()
 
 

@@ -129,12 +129,12 @@ razondictrfids = {'1':razonrfid1, '2':razonrfid2, '3':razonrfid3, '4':razonrfid4
 #     try:
 #         if accesodict[acceso]:
 #             requests.get(url=f'{accesodict[acceso]}/on', timeout=3)
-#             cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+#             cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
 #             VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razondict[acceso], contratof, cedulaf))
 #             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
 #             connf.commit()
 #     except:
-#         cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+#         cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
 #         VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f'fallo_{razondict[acceso]}', contratof, cedulaf))
 #         #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
 #         connf.commit()
@@ -145,7 +145,7 @@ def aperturaConcedidaVigilante(vigilante_id, vigilante_nombre, unidad_id, unidad
     try:
         if accesodict[acceso]:
             razonRegistrar=f"{razondict[acceso]}" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}-{razon}"
-            requests.get(f'{accesodict[acceso]}/on', timeout=4)
+            requests.get(f'{accesodict[acceso]}/on', timeout=5)
             cursorf.execute('''INSERT INTO web_logs_vigilantes (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razon, contrato, personas)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razonRegistrar, contrato, personas))
             connf.commit()
@@ -161,7 +161,7 @@ def aperturaConcedidaVigilante(vigilante_id, vigilante_nombre, unidad_id, unidad
                 except Exception as e:
                     print(f"{e} - fallo intentando enviar mensaje vigilante")
     except Exception as e:
-        cursorf.execute('''INSERT INTO web_logs_vigilantes (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razon, contrato)
+        cursorf.execute('''INSERT INTO web_logs_vigilantes (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, razon, contrato, personas)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, unidad_id, unidad_nombre, fecha, hora, f"fallo_{razonRegistrar}", contrato, personas))
         connf.commit()
         print(f"{e} - fallo intentando abrir el acceso {acceso} con permiso de vigilante")
@@ -170,7 +170,7 @@ def aperturaConcedidaVigilanteVisitante(vigilante_id, vigilante_nombre, nombref,
     try:
         if accesodict[acceso]:
             razonRegistrar=f"{razondict[acceso]}(vigilante)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(vigilante)-{razon}"
-            requests.get(f'{accesodict[acceso]}/on', timeout=4)
+            requests.get(f'{accesodict[acceso]}/on', timeout=5)
             cursorf.execute('UPDATE control_horarios_visitantes SET aperturas_hechas=%s WHERE horario_id=%s', (aperturasRealizadas+1,horario_id))
             cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado)
             VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
@@ -213,8 +213,8 @@ def aperturaconcedidawifi(id_usuariof, cursorf, connf, acceso, cedulaf, nombref,
     try:
         if accesodict[acceso]:
             razonRegistrar=f"{razondict[acceso]}(Wifi)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(Wifi)-{razon}"
-            requests.get(f'{accesodict[acceso]}/on', timeout=2)
-            cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+            requests.get(f'{accesodict[acceso]}/on', timeout=5)
+            cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
             VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, CONTRATO, cedulaf))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             # connf.commit()
@@ -238,8 +238,8 @@ def aperturaconcedidawifi(id_usuariof, cursorf, connf, acceso, cedulaf, nombref,
                 idPeticion=IdContador+1
 
         if accesodict[acceso]:
-            cursorf.execute('''INSERT INTO solicitud_aperturas (id, id_usuario, acceso, razon, estado, peticionInternet, feedback)
-            VALUES (%s, %s, %s, %s, %s, %s, %s);''', (idPeticion, id_usuariof, acceso, razon, 0, 'f', 'f'))
+            cursorf.execute('''INSERT INTO solicitud_aperturas (id, id_usuario, acceso, razon, estado, peticionInternet, feedback, abriendo, fecha, hora)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);''', (idPeticion, id_usuariof, acceso, razon, 0, 'f', 'f', 'f', fechaf, horaf))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             connf.commit()
 
@@ -247,9 +247,9 @@ def aperturaconcedidawifivisitante(id_usuariof, cursorf, connf, acceso, cedulaf,
     try:
         if accesodict[acceso]:
             razonRegistrar=f"{razondict[acceso]}(Wifi)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(Wifi)-{razon}"
-            requests.get(f'{accesodict[acceso]}/on', timeout=2)
+            requests.get(f'{accesodict[acceso]}/on', timeout=5)
             cursor.execute('UPDATE control_horarios_visitantes SET aperturas_hechas=%s WHERE horario_id=%s', (aperturasRealizadas+1,horario_id))
-            cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+            cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
             VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, CONTRATO, cedulaf))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             # connf.commit()
@@ -273,8 +273,8 @@ def aperturaconcedidawifivisitante(id_usuariof, cursorf, connf, acceso, cedulaf,
                 idPeticion=IdContador+1
 
         if accesodict[acceso]:
-            cursorf.execute('''INSERT INTO solicitud_aperturas (id, id_usuario, acceso, razon, estado, peticionInternet, feedback)
-            VALUES (%s, %s, %s, %s, %s, %s, %s);''', (idPeticion, id_usuariof, acceso, razon, 0, 'f', 'f'))
+            cursorf.execute('''INSERT INTO solicitud_aperturas (id, id_usuario, acceso, razon, estado, peticionInternet, feedback, abriendo)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s);''', (idPeticion, id_usuariof, acceso, razon, 0, 'f', 'f', 'f'))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             connf.commit()
 
@@ -284,15 +284,15 @@ def aperturaconcedidahuella(nombref, fechaf, horaf, contratof, cedulaf, cursorf,
     try:
         if accesodict[acceso]:
             razonRegistrar=razondicthuellas[acceso] if (razon in razondicthuellas[acceso].lower()) else f"{razondicthuellas[acceso]}-{razon}"
-            requests.get(url=f'{accesodict[acceso]}/onrh', timeout=3)
-            cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+            requests.get(url=f'{accesodict[acceso]}/onrh', timeout=5)
+            cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
             VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado) 
             VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
             connf.commit()
     except:
-        cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+        cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
         VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f'fallo_{razonRegistrar}', contratof, cedulaf))
         #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
         connf.commit()
@@ -304,15 +304,15 @@ def aperturaconcedidarfid(nombref, fechaf, horaf, contratof, cedulaf, cursorf, c
     try:
         if accesodict[acceso]:
             razonRegistrar=razondictrfids[acceso] if (razon in razondictrfids[acceso].lower()) else f"{razondictrfids[acceso]}-{razon}"
-            requests.get(url=f'{accesodict[acceso]}/onrh', timeout=3)
-            cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+            requests.get(url=f'{accesodict[acceso]}/onrh', timeout=5)
+            cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
             VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado) 
             VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
             connf.commit()
     except:
-        cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+        cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
         VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f'fallo_{razonRegistrar}', contratof, cedulaf))
         #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
         connf.commit()
@@ -324,8 +324,8 @@ def aperturaconcedidabluetooth(nombref, fechaf, horaf, contratof, cedulaf, curso
     try:
         if accesodict[acceso]:
             razonRegistrar=f"{razondict[acceso]}(Bluetooth)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(Bluetooth)-{razon}"
-            requests.get(f'{accesodict[acceso]}/on', timeout=2)
-            cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+            requests.get(f'{accesodict[acceso]}/on', timeout=5)
+            cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
             VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, razonRegistrar, CONTRATO, cedulaf))
             #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
             # connf.commit()
@@ -333,7 +333,7 @@ def aperturaconcedidabluetooth(nombref, fechaf, horaf, contratof, cedulaf, curso
             VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
             connf.commit()
     except:
-        cursorf.execute('''INSERT INTO web_interacciones (nombre, fecha, hora, razon, contrato, cedula_id)
+        cursorf.execute('''INSERT INTO web_logs_usuarios (nombre, fecha, hora, razon, contrato, cedula_id)
         VALUES (%s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f'fallo_{razonRegistrar}', contratof, cedulaf))
         #cursorf.execute('''UPDATE led SET onoff=1 WHERE onoff=0;''')
         connf.commit()
@@ -345,7 +345,7 @@ def aperturaconcedidabluetoothvisitante(nombref, fechaf, horaf, contratof, cedul
     try:
         if accesodict[acceso]:
             razonRegistrar=f"{razondict[acceso]}(bluetooth)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(bluetooth)-{razon}"
-            requests.get(f'{accesodict[acceso]}/on', timeout=4)
+            requests.get(f'{accesodict[acceso]}/on', timeout=5)
             cursorf.execute('UPDATE control_horarios_visitantes SET aperturas_hechas=%s WHERE horario_id=%s', (aperturasRealizadas+1,horario_id))
             cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado)
             VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
@@ -356,9 +356,12 @@ def aperturaconcedidabluetoothvisitante(nombref, fechaf, horaf, contratof, cedul
                 mensaje=f"El invitado {nombref} acaba de ingresar por medio de bluetooth"
             else:
                 mensaje=f"El invitado {nombref} acaba de salir por medio de bluetooth"
-            requests.get(f'https://api.callmebot.com/whatsapp.php?phone={NUMERO_BOT}&text=!sendto+{numero_propietario[1:]}+{mensaje}&apikey={APIKEY_BOT}', timeout=5)
+            try:
+                requests.get(f'https://api.callmebot.com/whatsapp.php?phone={NUMERO_BOT}&text=!sendto+{numero_propietario[1:]}+{mensaje}&apikey={APIKEY_BOT}', timeout=5)
+            except Exception as e:
+                print(f"{e} - fallo intentando enviar mensaje visitante bluetooth")
     except Exception as e:
-        cursorf.execute('''INSERT INTO web_logs_visitantes (vigilante_id, vigilante_nombre, nombre, fecha, hora, razon, contrato, cedula_id, acompanantes, cedula_propietario)
+        cursorf.execute('''INSERT INTO web_logs_visitantes (nombre, fecha, hora, razon, contrato, cedula_id, acompanantes, cedula_propietario)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s);''', (nombref, fechaf, horaf, f"fallo_{razonRegistrar}", contratof, cedulaf, acompanantes, cedula_propietario))
         connf.commit()
         print(f"{e} - fallo intentando abrir el acceso {acceso} por bluetooth")
@@ -367,7 +370,7 @@ def aperturadenegada(cursorf, connf, acceso):
     # cursorf.execute('''UPDATE led SET onoff=2 WHERE onoff=0;''')
     # connf.commit()
     try:
-        requests.get(url=f'{accesodict[acceso]}/off', timeout=3)
+        requests.get(url=f'{accesodict[acceso]}/off', timeout=5)
     except:
         print("fallo en peticion http")
     finally:
@@ -440,7 +443,7 @@ class MyServer(BaseHTTPRequestHandler):
 
             cursor.execute("SELECT id, nombre FROM web_usuarios where telegram_id=%s", (id_usuario,))
             datosVigilante = cursor.fetchall()
-            cursor.execute("SELECT id, nombre FROM web_unidades where codigo=%s", (codigo_unidad,))
+            cursor.execute("SELECT id, nombre FROM web_unidades where codigo=%s", (int(codigo_unidad),))
             datosUnidad = cursor.fetchall()
             
             # print(datosUnidad)
