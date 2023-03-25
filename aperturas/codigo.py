@@ -4,11 +4,6 @@ import os
 import pytz
 from datetime import datetime
 import requests
-from dotenv import load_dotenv
-from pathlib import Path
-
-dotenv_path = Path('/BaselocalARMsindocker/.env.manager')
-load_dotenv(dotenv_path=dotenv_path)
 
 dias_semana = ("Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo")
 ultimahora = datetime.strptime('23:59:59', '%H:%M:%S').time()
