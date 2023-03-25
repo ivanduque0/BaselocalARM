@@ -1,6 +1,8 @@
 import psycopg2
 import os
 import time
+import random
+
 connlocal = None
 cursorlocal=None
 total=0
