@@ -166,16 +166,23 @@ def aperturaConcedidaVigilante(vigilante_id, vigilante_nombre, unidad_id, unidad
         connf.commit()
         print(f"{e} - fallo intentando abrir el acceso {acceso} con permiso de vigilante")
 
+def aperturaConcedidaVigilanteVisitante2(acceso):
+    try:
+        if accesodict[acceso]:
+            requests.get(f'{accesodict[acceso]}/on', timeout=5)
+    except Exception as e:
+        print(f"{e} - fallo intentando abrir el acceso {acceso} con permiso de vigilante2")
+
 def aperturaConcedidaVigilanteVisitante(vigilante_id, vigilante_nombre, nombref, fechaf, horaf, contratof, cedulaf, cursorf, connf, acceso, razon, horario_id, aperturasRealizadas, acompanantes, cedula_propietario, numero_propietario):
     try:
         if accesodict[acceso]:
             razonRegistrar=f"{razondict[acceso]}(vigilante)" if (razon in razondict[acceso].lower()) else f"{razondict[acceso]}(vigilante)-{razon}"
-            requests.get(f'{accesodict[acceso]}/on', timeout=5)
+            # requests.get(f'{accesodict[acceso]}/on', timeout=5)
             cursorf.execute('UPDATE control_horarios_visitantes SET aperturas_hechas=%s WHERE horario_id=%s', (aperturasRealizadas+1,horario_id))
-            cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado)
-            VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
-            cursorf.execute('''INSERT INTO web_logs_visitantes (vigilante_id, vigilante_nombre, nombre, fecha, hora, razon, contrato, cedula_id, acompanantes, cedula_propietario)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf, acompanantes, cedula_propietario))
+            # cursorf.execute('''INSERT INTO accesos_abiertos (cedula, acceso, fecha, hora, estado)
+            # VALUES (%s, %s, %s, %s, %s)''', (cedulaf, acceso, fechaf, horaf, 'f'))
+            # cursorf.execute('''INSERT INTO web_logs_visitantes (vigilante_id, vigilante_nombre, nombre, fecha, hora, razon, contrato, cedula_id, acompanantes, cedula_propietario)
+            # VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);''', (vigilante_id, vigilante_nombre, nombref, fechaf, horaf, razonRegistrar, contratof, cedulaf, acompanantes, cedula_propietario))
             connf.commit()
             if razon=='entrada':
                 mensaje=f"El invitado {nombref} acaba de ingresar por medio del sistema de vigilancia"
@@ -202,10 +209,16 @@ def controlhorariovisitante(cursorf, connf, horario_id, razon):
             VALUES (%s, %s)''', (horario_id, 0))
             connf.commit()
             abrir=True
+    elif control_visitante[0][0]==0 and razon=='entrada':
+        abrir=True
     elif control_visitante[0][0]<2:
         if razon=='salida':
             cantidad_aperturas=control_visitante[0][0]
             abrir=True
+        else:
+            cantidad_aperturas=control_visitante[0][0]
+    elif control_visitante[0][0]==2:
+        cantidad_aperturas=2
 
     return abrir, cantidad_aperturas
 
@@ -475,56 +488,68 @@ class MyServer(BaseHTTPRequestHandler):
             # print(acceso_solicitud)
             # print(razonApertura)
 
-            cursor.execute("SELECT id, nombre FROM web_usuarios where telegram_id=%s", (id_usuario,))
-            datosVigilante = cursor.fetchall()
-            cursor.execute("SELECT usuario, fecha_entrada, fecha_salida, entrada, salida FROM web_horariospermitidos where id=%s", (int(horario_id),))
-            datosHorario = cursor.fetchall()
-
-
-            if len(datosHorario)!=0:
-                cursor.execute("SELECT cedula, nombre, cedula_propietario FROM web_usuarios where id=%s", (int(datosHorario[0][0]),))
-                datosInvitado = cursor.fetchall()
-                cursor.execute("SELECT numero_telefonico FROM web_usuarios where cedula=%s", (datosInvitado[0][2],))
-                datosPropietario = cursor.fetchall()
-                if len(datosInvitado)!=0 and len(datosPropietario)!=0:
-                    tz = pytz.timezone('America/Caracas')
-                    caracas_now = datetime.now(tz)
-                    horahoy = caracas_now.time()
-                    fechahoy = caracas_now.date()
-                    for _, fecha_entrada, fecha_salida, entrada, salida in datosHorario:
-                        if (fechahoy==fecha_entrada and horahoy>=entrada) or (fechahoy > fecha_entrada and fechahoy<fecha_salida) or (fechahoy==fecha_salida and horahoy<=salida):
-                            permitir, aperturasRealizadas = controlhorariovisitante(cursor, conn, horario_id, razonApertura)
-                            if permitir:
-                                invitado_cedula=datosInvitado[0][0]
-                                invitado_nombre=datosInvitado[0][1]
-                                vigilante_id=datosVigilante[0][0]
-                                vigilante_nombre=datosVigilante[0][1]
-                                fecha=str(caracas_now)[:10]
-                                
-                                aperturaConcedidaVigilanteVisitante(vigilante_id, vigilante_nombre, invitado_nombre, fecha, horahoy, CONTRATO, invitado_cedula, cursor, conn, acceso_solicitud, razonApertura, horario_id, aperturasRealizadas, acompanantes, datosInvitado[0][2], datosPropietario[0][0])
-                                self.send_response(200)
-                                self.send_header("Content-type", "utf-8")
-                                self.end_headers()
-                            else:
-                                aperturadenegada(cursor, conn, acceso_solicitud)
-                                self.send_response(200)
-                                self.send_header("Content-type", "utf-8")
-                                self.end_headers()  
-                        else:
-                            aperturadenegada(cursor, conn, acceso_solicitud)
-                            self.send_response(200)
-                            self.send_header("Content-type", "utf-8")
-                            self.end_headers()
-                else:
-                    aperturadenegada(cursor, conn, acceso_solicitud)
-                    self.send_response(200)
-                    self.send_header("Content-type", "utf-8")
-                    self.end_headers()
-            else:
-                aperturadenegada(cursor, conn, acceso_solicitud)
-                self.send_response(400)
+            if id_usuario=='blank' and horario_id=="blank" and acompanantes=="blank" and razonApertura=="blank":
+                aperturaConcedidaVigilanteVisitante2(acceso_solicitud)
+                self.send_response(200)
                 self.send_header("Content-type", "utf-8")
                 self.end_headers()
+            else:
+                cursor.execute("SELECT id, nombre FROM web_usuarios where telegram_id=%s", (id_usuario,))
+                datosVigilante = cursor.fetchall()
+                cursor.execute("SELECT usuario, fecha_entrada, fecha_salida, entrada, salida FROM web_horariospermitidos where id=%s", (int(horario_id),))
+                datosHorario = cursor.fetchall()
+                if len(datosHorario)!=0:
+                    cursor.execute("SELECT cedula, nombre, cedula_propietario FROM web_usuarios where id=%s", (int(datosHorario[0][0]),))
+                    datosInvitado = cursor.fetchall()
+                    cursor.execute("SELECT numero_telefonico FROM web_usuarios where cedula=%s", (datosInvitado[0][2],))
+                    datosPropietario = cursor.fetchall()
+                    if len(datosInvitado)!=0 and len(datosPropietario)!=0:
+                        tz = pytz.timezone('America/Caracas')
+                        caracas_now = datetime.now(tz)
+                        horahoy = caracas_now.time()
+                        fechahoy = caracas_now.date()
+                        for _, fecha_entrada, fecha_salida, entrada, salida in datosHorario:
+                            if (fechahoy==fecha_entrada and horahoy>=entrada) or (fechahoy > fecha_entrada and fechahoy<fecha_salida) or (fechahoy==fecha_salida and horahoy<=salida):
+                                permitir, aperturasRealizadas = controlhorariovisitante(cursor, conn, horario_id, razonApertura)
+                                if permitir:
+                                    invitado_cedula=datosInvitado[0][0]
+                                    invitado_nombre=datosInvitado[0][1]
+                                    vigilante_id=datosVigilante[0][0]
+                                    vigilante_nombre=datosVigilante[0][1]
+                                    fecha=str(caracas_now)[:10]
+                                    
+                                    aperturaConcedidaVigilanteVisitante(vigilante_id, vigilante_nombre, invitado_nombre, fecha, horahoy, CONTRATO, invitado_cedula, cursor, conn, acceso_solicitud, razonApertura, horario_id, aperturasRealizadas, acompanantes, datosInvitado[0][2], datosPropietario[0][0])
+                                    self.send_response(202)
+                                    self.send_header("Content-type", "utf-8")
+                                    self.end_headers()
+                                elif aperturasRealizadas==1 and razonApertura=='entrada':
+                                    self.send_response(406)
+                                    self.send_header("Content-type", "utf-8")
+                                    self.end_headers()
+                                elif aperturasRealizadas==0 and razonApertura=='salida':
+                                    self.send_response(407)
+                                    self.send_header("Content-type", "utf-8")
+                                    self.end_headers()
+                                elif aperturasRealizadas==2:
+                                    aperturadenegada(cursor, conn, acceso_solicitud)
+                                    self.send_response(405)
+                                    self.send_header("Content-type", "utf-8")
+                                    self.end_headers()  
+                            else:
+                                aperturadenegada(cursor, conn, acceso_solicitud)
+                                self.send_response(401)
+                                self.send_header("Content-type", "utf-8")
+                                self.end_headers()
+                    else:
+                        aperturadenegada(cursor, conn, acceso_solicitud)
+                        self.send_response(404)
+                        self.send_header("Content-type", "utf-8")
+                        self.end_headers()
+                else:
+                    aperturadenegada(cursor, conn, acceso_solicitud)
+                    self.send_response(404)
+                    self.send_header("Content-type", "utf-8")
+                    self.end_headers()
 
         if len(peticion) == 4 and peticion[3] == "seguricel_wifi_activo":
             self.send_response(200)
